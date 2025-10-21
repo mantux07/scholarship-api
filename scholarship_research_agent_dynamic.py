@@ -212,6 +212,9 @@ class DynamicScholarshipAgent:
         # === CORPORATE SCHOLARSHIPS ===
         self.add_corporate_scholarships()
 
+        # === COMPREHENSIVE BASELINE SCHOLARSHIPS (from version 1) ===
+        self.add_comprehensive_baseline_scholarships()
+
         # === CLUBS/ORGANIZATIONS SCHOLARSHIPS ===
         if self.clubs and self.clubs.lower() != 'not specified':
             self.add_club_scholarships()
@@ -600,6 +603,364 @@ class DynamicScholarshipAgent:
             "https://www.apple.com/careers/us/apple-scholars.html",
             "Includes internship and mentorship",
             False, "Corporate", 7.0
+        )
+
+    def add_comprehensive_baseline_scholarships(self):
+        """Add comprehensive baseline scholarships from version 1"""
+
+        # === PURDUE-SPECIFIC SCHOLARSHIPS ===
+        if 'purdue' in self.university.lower():
+            # Purdue Engineering Academic Excellence
+            self.add_scholarship(
+                "Purdue Engineering Academic Excellence Scholarship", 2000, 5000,
+                "$2,000-$5,000", "March 1, 2026", 3.5, 3.7,
+                "Sophomore engineering students, demonstrated academic excellence",
+                True, 600, 2, False, "High",
+                "https://engineering.purdue.edu/Engr/Academics/Scholarships",
+                "Purdue College of Engineering merit award",
+                False, "Purdue", 4.0
+            )
+
+            # Purdue Trustees Scholarship
+            self.add_scholarship(
+                "Purdue Trustees Scholarship (Continuing)", 8000, 16000,
+                "$8,000-$16,000", "February 1, 2026", 3.8, 3.9,
+                "Current Purdue students, outstanding academic achievement",
+                True, 800, 3, True, "Very High",
+                "https://www.purdue.edu/financialaid/scholarships/",
+                "Highly prestigious Purdue scholarship",
+                True, "Purdue", 6.0
+            )
+
+            # Engineering Education Foundation
+            self.add_scholarship(
+                "Engineering Education Foundation Scholarships", 1500, 5000,
+                "$1,500-$5,000", "March 15, 2026", 3.0, 3.5,
+                "Engineering students regardless of residency",
+                True, 500, 2, False, "Medium",
+                "https://engineering.purdue.edu/Engr/Academics/Scholarships",
+                "Various programs available",
+                True, "Purdue", 3.0
+            )
+
+            # School-specific scholarships
+            if 'mechanical' in self.major.lower() or 'mechanical' in self.discipline.lower():
+                self.add_scholarship(
+                    "Purdue School of Mechanical Engineering Scholarship", 1000, 3000,
+                    "$1,000-$3,000", "February 28, 2026", 3.4, 3.6,
+                    "Mechanical engineering majors",
+                    True, 500, 1, False, "Medium",
+                    "https://engineering.purdue.edu/ME/Academics/Scholarships",
+                    "ME department scholarships",
+                    True, "Purdue", 3.0
+                )
+
+            if 'electrical' in self.major.lower() or 'computer eng' in self.major.lower():
+                self.add_scholarship(
+                    "Purdue School of Electrical and Computer Engineering Award", 1500, 4000,
+                    "$1,500-$4,000", "February 28, 2026", 3.5, 3.7,
+                    "ECE majors, demonstrated excellence",
+                    True, 600, 2, False, "Medium",
+                    "https://engineering.purdue.edu/ECE/Academics/Scholarships",
+                    "ECE department awards",
+                    True, "Purdue", 3.5
+                )
+
+            if 'civil' in self.major.lower():
+                self.add_scholarship(
+                    "Purdue School of Civil Engineering Scholarship", 1000, 3500,
+                    "$1,000-$3,500", "March 10, 2026", 3.3, 3.6,
+                    "Civil engineering majors",
+                    True, 500, 1, False, "Medium",
+                    "https://engineering.purdue.edu/CE/Academics/Scholarships",
+                    "Civil Engineering department scholarships",
+                    True, "Purdue", 3.0
+                )
+
+            # Out-of-state Purdue scholarships
+            if "out-of-state" in self.residency.lower() or "out of state" in self.residency.lower():
+                self.add_scholarship(
+                    "Purdue Out-of-State Engineering Merit Award", 1000, 4000,
+                    "$1,000-$4,000", "March 1, 2026", 3.3, 3.5,
+                    "Out-of-state engineering students",
+                    False, 0, 0, False, "Medium",
+                    "https://www.purdue.edu/financialaid/scholarships/",
+                    "Automatic consideration",
+                    True, "Out-of-State", 1.0
+                )
+
+                self.add_scholarship(
+                    "Boilermaker Out-of-State Tuition Grant", 2000, 6000,
+                    "$2,000-$6,000", "Rolling", 3.0, 3.3,
+                    "Out-of-state students, financial need and merit",
+                    False, 0, 0, False, "Medium",
+                    "https://www.purdue.edu/financialaid/",
+                    "Rolling admissions, apply early",
+                    True, "Out-of-State", 2.0
+                )
+
+            # Database/search tools
+            self.add_scholarship(
+                "Purdue Career & Scholarship Database", 0, 10000,
+                "Varies widely", "Ongoing", 0.0, 0.0,
+                "Purdue students - searchable database",
+                False, 0, 0, False, "Low",
+                "https://www.purdue.edu/drc/",
+                "Check regularly for new opportunities",
+                False, "Purdue", 0.5
+            )
+
+        # === NATIONAL MERIT & COMPETITIVE SCHOLARSHIPS ===
+
+        # Astronaut Scholarship
+        if self.user_gpa >= 3.7:
+            self.add_scholarship(
+                "Astronaut Scholarship Foundation", 15000, 15000,
+                "$15,000", "Varies (Feb-Mar 2026)", 3.7, 3.8,
+                "Sophomore+ STEM students",
+                True, 800, 2, True, "Very High",
+                "https://astronautscholarship.org",
+                "Must be nominated by university",
+                False, "National", 7.0
+            )
+
+        # National Merit
+        self.add_scholarship(
+            "National Merit Finalist Scholarship at Purdue", 2000, 2000,
+            "$2,000/year renewable", "Listed Purdue first choice", 0.0, 3.5,
+            "National Merit Finalists",
+            False, 0, 0, False, "Very High",
+            "https://www.nationalmerit.org",
+            "Must list university as first choice",
+            True, "National", 5.0
+        )
+
+        # Jack Kent Cooke (transfer students)
+        if 'transfer' in self.year.lower() or self.user_gpa >= 3.5:
+            self.add_scholarship(
+                "Jack Kent Cooke Foundation Undergraduate Transfer Scholarship", 30000, 55000,
+                "Up to $55,000/year", "January 2026", 3.5, 3.8,
+                "Transfer students with financial need",
+                True, 1200, 3, True, "Very High",
+                "https://www.jkcf.org/our-scholarships/undergraduate-transfer-scholarship/",
+                "One of largest transfer scholarships",
+                True, "National", 9.0
+            )
+
+        # Paul and Daisy Soros (immigrants)
+        self.add_scholarship(
+            "Paul and Daisy Soros Fellowships for New Americans", 25000, 25000,
+            "$25,000/year (up to $90k total)", "November 1, 2025", 3.5, 3.7,
+            "Immigrants or children of immigrants",
+            True, 1000, 3, True, "Very High",
+            "https://www.pdsoros.org",
+            "For graduate study support",
+            True, "National", 8.0
+        )
+
+        # GE-Reagan Foundation
+        self.add_scholarship(
+            "GE-Reagan Foundation Scholarship", 10000, 40000,
+            "$10,000-$40,000", "January 5, 2026", 3.3, 3.6,
+            "Leadership, drive, integrity, citizenship",
+            True, 1000, 3, True, "Very High",
+            "https://www.reaganfoundation.org/education/scholarship-programs/",
+            "Highly competitive national award",
+            False, "Corporate", 7.0
+            )
+
+        # General scholarship search tools
+        self.add_scholarship(
+            "Fastweb Scholarship Search", 0, 50000,
+            "Varies widely", "Ongoing", 0.0, 0.0,
+            "Custom search based on profile",
+            False, 0, 0, False, "Low",
+            "https://www.fastweb.com",
+            "Free scholarship matching service",
+            False, "National", 0.5
+        )
+
+        # === ADDITIONAL CORPORATE SCHOLARSHIPS (Missing from current) ===
+
+        # Google
+        self.add_scholarship(
+            "Google Student Scholarship", 10000, 10000,
+            "$10,000", "December 15, 2025", 3.4, 3.7,
+            "CS/Engineering students, passion for technology",
+            True, 800, 2, False, "Very High",
+            "https://buildyourfuture.withgoogle.com/scholarships",
+            "Multiple programs available",
+            False, "Corporate", 6.0
+        )
+
+        # Boeing
+        self.add_scholarship(
+            "Boeing Company Scholarship", 5000, 10000,
+            "$5,000-$10,000", "March 31, 2026", 3.3, 3.5,
+            "Engineering students (Aerospace, Mechanical, Electrical preferred)",
+            True, 700, 2, False, "High",
+            "https://www.boeing.com/careers/college-scholarships",
+            "Internship opportunities available",
+            False, "Corporate", 5.0
+        )
+
+        # Intel
+        self.add_scholarship(
+            "Intel Scholarship Program", 5000, 10000,
+            "$5,000-$10,000", "January 31, 2026", 3.5, 3.7,
+            "Engineering/CS students, underrepresented groups preferred",
+            True, 700, 2, False, "High",
+            "https://www.intel.com/content/www/us/en/diversity/scholarships.html",
+            "Focus on diversity in STEM",
+            False, "Corporate", 5.0
+        )
+
+        # Tesla
+        self.add_scholarship(
+            "Tesla Engineering Scholarship", 5000, 10000,
+            "$5,000-$10,000", "February 28, 2026", 3.4, 3.6,
+            "Engineering students interested in sustainable energy",
+            True, 600, 1, False, "High",
+            "https://www.tesla.com/careers/students",
+            "Passion for sustainability required",
+            False, "Corporate", 4.5
+        )
+
+        # Raytheon
+        self.add_scholarship(
+            "Raytheon Technologies Engineering Scholarship", 5000, 10000,
+            "$5,000-$10,000", "March 15, 2026", 3.2, 3.5,
+            "Engineering majors, Aerospace/Mechanical/Electrical",
+            True, 700, 2, False, "High",
+            "https://www.rtx.com/our-company/corporate-responsibility/scholarship-programs",
+            "Defense/aerospace focus",
+            False, "Corporate", 4.5
+        )
+
+        # Lockheed Martin - requires US citizenship
+        if self.residency.lower() != "international":
+            self.add_scholarship(
+                "Lockheed Martin STEM Scholarship", 10000, 10000,
+                "$10,000", "April 1, 2026", 3.3, 3.6,
+                "Engineering/CS majors, US citizenship required",
+                True, 800, 2, False, "High",
+                "https://www.lockheedmartin.com/en-us/who-we-are/communities/stem-education/scholarships.html",
+                "Focus on aerospace and defense-related fields",
+                False, "Corporate", 5.0
+            )
+
+        # === PROFESSIONAL ORGANIZATION SCHOLARSHIPS (Missing) ===
+
+        # IEEE
+        self.add_scholarship(
+            "IEEE Presidents' Scholarship", 10000, 10000,
+            "$10,000", "May 2026", 3.5, 3.7,
+            "Electrical/Computer engineering, IEEE member",
+            True, 1000, 3, True, "Very High",
+            "https://www.ieee.org/membership/students/scholarships/",
+            "Highly competitive, innovative project required",
+            False, "Professional Org", 6.0
+        )
+
+        # ASME
+        self.add_scholarship(
+            "American Society of Mechanical Engineers (ASME) Scholarship", 1500, 13000,
+            "$1,500-$13,000", "March 1, 2026", 3.0, 3.4,
+            "Mechanical engineering students, ASME membership",
+            True, 600, 2, False, "Medium",
+            "https://www.asme.org/asme-programs/students-and-faculty/scholarships",
+            "Multiple programs available",
+            True, "Professional Org", 4.0
+        )
+
+        # AIChE
+        self.add_scholarship(
+            "American Institute of Chemical Engineers (AIChE) Scholarship", 1000, 5000,
+            "$1,000-$5,000", "May 15, 2026", 3.0, 3.4,
+            "Chemical engineering students, AIChE membership",
+            True, 500, 1, False, "Medium",
+            "https://www.aiche.org/community/awards/scholarships",
+            "Various programs for ChE students",
+            True, "Professional Org", 3.0
+        )
+
+        # ASCE
+        self.add_scholarship(
+            "American Society of Civil Engineers (ASCE) Scholarship", 2000, 5000,
+            "$2,000-$5,000", "February 10, 2026", 3.0, 3.4,
+            "Civil engineering students, ASCE membership",
+            True, 500, 2, False, "Medium",
+            "https://www.asce.org/career-growth/student-opportunities/scholarships",
+            "Multiple awards available",
+            True, "Professional Org", 3.5
+        )
+
+        # SAE
+        self.add_scholarship(
+            "Society of Automotive Engineers (SAE) Engineering Scholarship", 1000, 6000,
+            "$1,000-$6,000", "January 15, 2026", 3.0, 3.4,
+            "Engineering students in automotive/mobility fields",
+            True, 500, 2, False, "Medium",
+            "https://www.sae.org/participate/scholarships",
+            "Focus on automotive engineering",
+            True, "Professional Org", 3.5
+        )
+
+        # Tau Beta Pi
+        if self.user_gpa >= 3.7:
+            self.add_scholarship(
+                "Tau Beta Pi Engineering Honor Society Scholarships", 2000, 10000,
+                "$2,000-$10,000", "April 2026", 3.7, 3.8,
+                "Engineering students in top 1/8 (junior)",
+                True, 800, 3, False, "High",
+                "https://www.tbp.org/memb/ScholarInfo.cfm",
+                "Must be TBP member or eligible",
+                True, "Professional Org", 5.0
+            )
+
+        # NACME
+        self.add_scholarship(
+            "National Action Council for Minorities in Engineering (NACME)", 2500, 5000,
+            "$2,500-$5,000", "April 30, 2026", 3.0, 3.3,
+            "Underrepresented minority engineering students",
+            True, 600, 2, False, "Medium",
+            "https://www.nacme.org/scholarships",
+            "Focus on diversity in engineering",
+            True, "Professional Org", 4.0
+        )
+
+        # AFCEA
+        if self.residency.lower() != "international":
+            self.add_scholarship(
+                "AFCEA STEM Major Scholarships", 2500, 5000,
+                "$2,500-$5,000", "Multiple deadlines", 3.0, 3.3,
+                "STEM majors, US citizenship",
+                True, 500, 1, False, "Medium",
+                "https://www.afcea.org/scholarships",
+                "Military/cybersecurity focus",
+                True, "National", 3.5
+            )
+
+        # ASM Materials
+        self.add_scholarship(
+            "ASM Materials Education Foundation Scholarships", 1000, 10000,
+            "$1,000-$10,000", "May 1, 2026", 3.0, 3.4,
+            "Materials science/engineering students",
+            True, 600, 2, False, "Medium",
+            "https://www.asmfoundation.org/scholarships/",
+            "Various materials engineering programs",
+            True, "Professional Org", 3.5
+        )
+
+        # SME
+        self.add_scholarship(
+            "SME Education Foundation Scholarships", 1000, 6000,
+            "$1,000-$6,000", "February 1, 2026", 3.0, 3.3,
+            "Manufacturing engineering/technology students",
+            True, 500, 1, False, "Medium",
+            "https://www.smeef.org/scholarships/",
+            "Focus on manufacturing",
+            True, "Professional Org", 3.0
         )
 
     def add_club_scholarships(self):
