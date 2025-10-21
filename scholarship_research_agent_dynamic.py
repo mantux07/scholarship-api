@@ -359,17 +359,16 @@ class DynamicScholarshipAgent:
             False, "Corporate", 5.0
         )
 
-        # SWE scholarships are primarily for women
-        if 'female' in self.gender.lower() or 'woman' in self.gender.lower():
-            self.add_scholarship(
-                "Society of Women Engineers (SWE) Scholarship", 1000, 15000,
-                "$1,000-$15,000", "February 15, 2026", 3.0, 3.5,
-                "Women in engineering, merit-based",
-                True, 600, 2, False, "Medium",
-                "https://swe.org/scholarships/",
-                "Multiple scholarships for women in engineering",
-                False, "Professional Org", 4.0
-            )
+        # SWE scholarships - open to all genders (verified by user)
+        self.add_scholarship(
+            "Society of Women Engineers (SWE) Scholarship", 1000, 15000,
+            "$1,000-$15,000", "February 15, 2026", 3.0, 3.5,
+            "Engineering students, merit-based",
+            True, 600, 2, False, "Medium",
+            "https://swe.org/scholarships/",
+            "Open to all genders - multiple scholarship programs available",
+            False, "Professional Org", 4.0
+        )
 
     def add_business_scholarships(self):
         """Add business-specific scholarships"""
@@ -619,16 +618,15 @@ class DynamicScholarshipAgent:
                 False, "Professional Org", 6.0
             )
 
-        # SWE - Society of Women Engineers (primarily for women)
-        if ('swe' in clubs_lower or 'women engineers' in clubs_lower or 'society of women' in clubs_lower) and \
-           ('female' in self.gender.lower() or 'woman' in self.gender.lower()):
+        # SWE - Society of Women Engineers (open to all genders per user verification)
+        if 'swe' in clubs_lower or 'women engineers' in clubs_lower or 'society of women' in clubs_lower:
             self.add_scholarship(
                 "Society of Women Engineers (SWE) Scholarship", 1000, 15000,
                 "$1,000-$15,000", "February 15, 2026", 3.0, 3.5,
-                "SWE members - women in engineering",
+                "SWE members - engineering students",
                 True, 600, 2, False, "Medium",
                 "https://swe.org/scholarships/",
-                "Multiple scholarships available for women in engineering",
+                "Multiple scholarships available - open to all genders",
                 False, "Professional Org", 4.0
             )
 
