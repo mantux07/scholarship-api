@@ -1,0 +1,186 @@
+{
+  "version": "1.0",
+  "last_updated": "2025-10-22",
+  "update_frequency": "weekly",
+  "scholarships": [
+    {
+      "id": "nsbe-001",
+      "name": "National Society of Black Engineers (NSBE) Scholarship",
+      "amount_min": 1000,
+      "amount_max": 10000,
+      "amount_display": "$1,000-$10,000",
+      "deadline": "March 15, 2026",
+      "deadline_type": "annual",
+      "source_url": "https://www.nsbe.org/scholarships",
+      "application_url": "https://www.nsbe.org/scholarships",
+      "gpa_min": 3.0,
+      "gpa_preferred": 3.3,
+      "requirements": {
+        "heritage": ["Black", "African American"],
+        "major": ["Engineering"],
+        "clubs": ["NSBE"],
+        "citizenship": ["US"]
+      },
+      "details": {
+        "description": "For NSBE members pursuing engineering degrees",
+        "essay_required": true,
+        "essay_word_count": 800,
+        "letters_required": 2,
+        "interview_required": false,
+        "competitiveness": "High",
+        "estimated_hours": 4.0
+      },
+      "category": "Professional Org",
+      "estimated_applications": 800,
+      "renewable": false,
+      "need_based": false,
+      "status": "active",
+      "last_verified": "2025-10-22",
+      "notes": "Must be NSBE member or eligible for membership",
+      "priority_boost": 5.0
+    },
+    {
+      "id": "shpe-001",
+      "name": "Society of Hispanic Professional Engineers (SHPE) Scholarship",
+      "amount_min": 1000,
+      "amount_max": 5000,
+      "amount_display": "$1,000-$5,000",
+      "deadline": "April 1, 2026",
+      "deadline_type": "annual",
+      "source_url": "https://www.shpe.org/scholarships",
+      "application_url": "https://www.shpe.org/scholarships",
+      "gpa_min": 2.75,
+      "gpa_preferred": 3.2,
+      "requirements": {
+        "heritage": ["Hispanic", "Latino"],
+        "major": ["Engineering", "Science", "Technology"],
+        "clubs": ["SHPE"]
+      },
+      "details": {
+        "description": "For Hispanic students in STEM fields",
+        "essay_required": true,
+        "essay_word_count": 500,
+        "letters_required": 1,
+        "interview_required": false,
+        "competitiveness": "Medium",
+        "estimated_hours": 3.0
+      },
+      "category": "Professional Org",
+      "estimated_applications": 600,
+      "renewable": false,
+      "need_based": false,
+      "status": "active",
+      "last_verified": "2025-10-22",
+      "notes": "SHPE membership strongly encouraged",
+      "priority_boost": 4.0
+    },
+    {
+      "id": "swe-001",
+      "name": "Society of Women Engineers (SWE) Scholarship",
+      "amount_min": 1000,
+      "amount_max": 15000,
+      "amount_display": "$1,000-$15,000",
+      "deadline": "February 15, 2026",
+      "deadline_type": "annual",
+      "source_url": "https://swe.org/scholarships",
+      "application_url": "https://swe.org/scholarships",
+      "gpa_min": 3.0,
+      "gpa_preferred": 3.5,
+      "requirements": {
+        "gender": ["Female"],
+        "major": ["Engineering", "Computer Science", "Technology"]
+      },
+      "details": {
+        "description": "For women pursuing engineering and technology degrees",
+        "essay_required": true,
+        "essay_word_count": 1000,
+        "letters_required": 2,
+        "interview_required": false,
+        "competitiveness": "High",
+        "estimated_hours": 5.0
+      },
+      "category": "Professional Org",
+      "estimated_applications": 1000,
+      "renewable": true,
+      "need_based": false,
+      "status": "active",
+      "last_verified": "2025-10-22",
+      "notes": "Multiple scholarship amounts available",
+      "priority_boost": 6.0
+    },
+    {
+      "id": "coca-cola-001",
+      "name": "Coca-Cola Scholars Program",
+      "amount_min": 20000,
+      "amount_max": 20000,
+      "amount_display": "$20,000",
+      "deadline": "October 31, 2025",
+      "deadline_type": "annual",
+      "source_url": "https://www.coca-colascholarsfoundation.org",
+      "application_url": "https://www.coca-colascholarsfoundation.org/apply",
+      "gpa_min": 3.0,
+      "gpa_preferred": 3.5,
+      "requirements": {
+        "citizenship": ["US"],
+        "year": ["Senior"]
+      },
+      "details": {
+        "description": "Leadership, academic excellence, community service",
+        "essay_required": true,
+        "essay_word_count": 1000,
+        "letters_required": 2,
+        "interview_required": true,
+        "competitiveness": "Very High",
+        "estimated_hours": 7.0
+      },
+      "category": "National",
+      "estimated_applications": 1000,
+      "renewable": false,
+      "need_based": false,
+      "status": "active",
+      "last_verified": "2025-10-22",
+      "notes": "One of largest corporate scholarship programs; US citizens only",
+      "priority_boost": 7.0
+    },
+    {
+      "id": "purdue-trustees-001",
+      "name": "Purdue Trustees Scholarship",
+      "amount_min": 8000,
+      "amount_max": 16000,
+      "amount_display": "$8,000-$16,000",
+      "deadline": "November 1, 2025",
+      "deadline_type": "annual",
+      "source_url": "https://www.purdue.edu/admissions/costs-aid/scholarships",
+      "application_url": "https://www.purdue.edu/admissions/costs-aid/scholarships",
+      "gpa_min": 3.7,
+      "gpa_preferred": 3.9,
+      "requirements": {
+        "university": ["Purdue University", "Purdue"],
+        "year": ["Freshman", "Sophomore", "Junior"]
+      },
+      "details": {
+        "description": "Outstanding academic achievement at Purdue",
+        "essay_required": false,
+        "essay_word_count": 0,
+        "letters_required": 0,
+        "interview_required": false,
+        "competitiveness": "Very High",
+        "estimated_hours": 1.0
+      },
+      "category": "Purdue",
+      "estimated_applications": 500,
+      "renewable": true,
+      "need_based": false,
+      "status": "active",
+      "last_verified": "2025-10-22",
+      "notes": "Highly prestigious Purdue award for continuing students",
+      "priority_boost": 8.0
+    }
+  ],
+  "metadata": {
+    "total_scholarships": 5,
+    "categories": ["Professional Org", "National", "Purdue"],
+    "total_value_min": 31000,
+    "total_value_max": 56000
+  }
+}
