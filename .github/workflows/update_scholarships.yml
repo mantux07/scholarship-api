@@ -47,7 +47,7 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add scholarship_database.json
-          git add update_report_*.txt
+          git add update_report_*.txt 2>/dev/null || true
           git commit -m "Auto-update: Weekly scholarship refresh $(date +'%Y-%m-%d')" || exit 0
           git push
 
