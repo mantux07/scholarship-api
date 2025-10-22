@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Author: Tim Smith -->
+    <!-- Note: All Code owned by Tim -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scholarship Research Tool - TSProfits.com</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎓 Scholarship Research Tool</h1>
+            <p class="subtitle">Discover personalized scholarship opportunities tailored to YOUR profile</p>
+        </header>
+
+        <div class="form-card">
+            <form id="scholarshipForm">
+                <div class="section">
+                    <h2>📋 Your Academic Profile</h2>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="university">University *</label>
+                            <input type="text" id="university" name="university" list="universityList"
+                                   placeholder="e.g., Purdue University" required>
+                            <datalist id="universityList">
+                                <option value="Purdue University">
+                                <option value="MIT">
+                                <option value="Stanford University">
+                                <option value="UC Berkeley">
+                                <option value="UCLA">
+                                <option value="University of Michigan">
+                                <option value="Georgia Tech">
+                                <option value="Carnegie Mellon University">
+                                <option value="University of Texas at Austin">
+                                <option value="University of Illinois Urbana-Champaign">
+                                <option value="Cornell University">
+                                <option value="Caltech">
+                                <option value="Princeton University">
+                                <option value="Harvard University">
+                                <option value="Columbia University">
+                            </datalist>
+                            <small style="color: #718096; font-size: 0.85em;">Start typing to see suggestions, or enter your own</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="major">Major *</label>
+                            <input type="text" id="major" name="major" list="majorList"
+                                   placeholder="e.g., Engineering" required>
+                            <datalist id="majorList">
+                                <option value="Engineering">
+                                <option value="Mechanical Engineering">
+                                <option value="Electrical Engineering">
+                                <option value="Computer Engineering">
+                                <option value="Civil Engineering">
+                                <option value="Chemical Engineering">
+                                <option value="Computer Science">
+                                <option value="Pre-Med">
+                                <option value="Biology">
+                                <option value="Chemistry">
+                                <option value="Physics">
+                                <option value="Mathematics">
+                                <option value="Business">
+                                <option value="Accounting">
+                                <option value="Finance">
+                                <option value="Nursing">
+                                <option value="Psychology">
+                                <option value="Political Science">
+                                <option value="History">
+                                <option value="English">
+                            </datalist>
+                            <small style="color: #718096; font-size: 0.85em;">Start typing to see suggestions, or enter your own</small>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="year">Year in School *</label>
+                            <select id="year" name="year" required>
+                                <option value="">Select...</option>
+                                <option value="Freshman">Freshman</option>
+                                <option value="Sophomore">Sophomore</option>
+                                <option value="Junior">Junior</option>
+                                <option value="Senior">Senior</option>
+                                <option value="Graduate">Graduate</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="gpa">Current GPA *</label>
+                            <input type="number" id="gpa" name="gpa"
+                                   min="0" max="4.0" step="0.01"
+                                   placeholder="3.5" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="discipline">Discipline/Specialization</label>
+                            <input type="text" id="discipline" name="discipline"
+                                   placeholder="e.g., Mechanical, Computer Science (optional)">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>👤 Personal Background</h2>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="heritage">Heritage/Ethnicity</label>
+
+                            <div class="popular-chips">
+                                <p style="font-size: 0.9em; color: #666; margin-bottom: 0.5rem;">
+                                    Click to add (can select multiple):
+                                </p>
+                                <div class="chips-container">
+                                    <button type="button" class="chip" onclick="addToField('heritage', 'African American', this)">African American</button>
+                                    <button type="button" class="chip" onclick="addToField('heritage', 'Black', this)">Black</button>
+                                    <button type="button" class="chip" onclick="addToField('heritage', 'Hispanic', this)">Hispanic</button>
+                                    <button type="button" class="chip" onclick="addToField('heritage', 'Latino', this)">Latino</button>
+                                    <button type="button" class="chip" onclick="addToField('heritage', 'Asian American', this)">Asian American</button>
+                                    <button type="button" class="chip" onclick="addToField('heritage', 'Pacific Islander', this)">Pacific Islander</button>
+                                    <button type="button" class="chip" onclick="addToField('heritage', 'Native American', this)">Native American</button>
+                                    <button type="button" class="chip" onclick="addToField('heritage', 'Indigenous', this)">Indigenous</button>
+                                    <button type="button" class="chip" onclick="addToField('heritage', 'Latvian', this)">Latvian</button>
+                                    <button type="button" class="chip" onclick="addToField('heritage', 'Baltic', this)">Baltic</button>
+                                    <button type="button" class="chip" onclick="addToField('heritage', 'Middle Eastern', this)">Middle Eastern</button>
+                                    <button type="button" class="chip" onclick="addToField('heritage', 'Caucasian', this)">Caucasian</button>
+                                </div>
+                            </div>
+
+                            <input type="text" id="heritage" name="heritage"
+                                   placeholder="Or type custom heritage (can enter multiple, comma-separated)">
+                            <small style="color: #718096; font-size: 0.85em;">Click chips above or type custom heritage/ethnicity. Example: "Mixed Black/Latvian"</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="gender">Gender Identity</label>
+                            <select id="gender" name="gender">
+                                <option value="">Prefer not to say</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Non-Binary">Non-Binary</option>
+                                <option value="LGBTQ+">LGBTQ+</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="skills">Skills & Expertise</label>
+
+                            <div class="popular-chips">
+                                <p style="font-size: 0.9em; color: #666; margin-bottom: 0.5rem;">
+                                    Click to add popular skills:
+                                </p>
+                                <div class="chips-container">
+                                    <button type="button" class="chip" onclick="addToField('skills', 'Programming', this)">Programming</button>
+                                    <button type="button" class="chip" onclick="addToField('skills', 'Leadership', this)">Leadership</button>
+                                    <button type="button" class="chip" onclick="addToField('skills', 'Research', this)">Research</button>
+                                    <button type="button" class="chip" onclick="addToField('skills', 'Community Service', this)">Community Service</button>
+                                    <button type="button" class="chip" onclick="addToField('skills', 'Piano', this)">Piano</button>
+                                    <button type="button" class="chip" onclick="addToField('skills', 'Spanish', this)">Spanish</button>
+                                    <button type="button" class="chip" onclick="addToField('skills', 'Design', this)">Design</button>
+                                    <button type="button" class="chip" onclick="addToField('skills', 'Writing', this)">Writing</button>
+                                </div>
+                            </div>
+
+                            <input type="text" id="skills" name="skills"
+                                   placeholder="Or type your skills (comma-separated)">
+                            <small style="color: #718096; font-size: 0.85em;">Click chips above or type custom skills</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="clubs">Clubs & Organizations</label>
+
+                            <div class="popular-chips">
+                                <p style="font-size: 0.9em; color: #666; margin-bottom: 0.5rem;">
+                                    Click to add popular clubs:
+                                </p>
+                                <div class="chips-container">
+                                    <button type="button" class="chip" onclick="addToField('clubs', 'IEEE', this)">IEEE</button>
+                                    <button type="button" class="chip" onclick="addToField('clubs', 'NSBE', this)">NSBE</button>
+                                    <button type="button" class="chip" onclick="addToField('clubs', 'SHPE', this)">SHPE</button>
+                                    <button type="button" class="chip" onclick="addToField('clubs', 'SWE', this)">SWE</button>
+                                    <button type="button" class="chip" onclick="addToField('clubs', 'ACM', this)">ACM</button>
+                                    <button type="button" class="chip" onclick="addToField('clubs', 'ASME', this)">ASME</button>
+                                    <button type="button" class="chip" onclick="addToField('clubs', 'ASCE', this)">ASCE</button>
+                                    <button type="button" class="chip" onclick="addToField('clubs', 'SAE', this)">SAE</button>
+                                    <button type="button" class="chip" onclick="addToField('clubs', 'Tau Beta Pi', this)">Tau Beta Pi</button>
+                                    <button type="button" class="chip" onclick="addToField('clubs', 'Robotics Club', this)">Robotics</button>
+                                    <button type="button" class="chip" onclick="addToField('clubs', 'National Honor Society', this)">NHS</button>
+                                    <button type="button" class="chip" onclick="addToField('clubs', 'Student Government', this)">Student Gov</button>
+                                </div>
+                            </div>
+
+                            <input type="text" id="clubs" name="clubs"
+                                   placeholder="Or type your clubs (comma-separated)">
+                            <small style="color: #718096; font-size: 0.85em;">Click chips above or type custom clubs. NSBE=Black Engineers, SHPE=Hispanic Engineers, SWE=Women Engineers</small>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="athletics">Athletics & Sports</label>
+
+                            <div class="popular-chips">
+                                <p style="font-size: 0.9em; color: #666; margin-bottom: 0.5rem;">
+                                    Click to add sports:
+                                </p>
+                                <div class="chips-container">
+                                    <button type="button" class="chip" onclick="addToField('athletics', 'Varsity Football', this)">Football</button>
+                                    <button type="button" class="chip" onclick="addToField('athletics', 'Varsity Basketball', this)">Basketball</button>
+                                    <button type="button" class="chip" onclick="addToField('athletics', 'Varsity Soccer', this)">Soccer</button>
+                                    <button type="button" class="chip" onclick="addToField('athletics', 'Track & Field', this)">Track</button>
+                                    <button type="button" class="chip" onclick="addToField('athletics', 'Cross Country', this)">Cross Country</button>
+                                    <button type="button" class="chip" onclick="addToField('athletics', 'Swimming', this)">Swimming</button>
+                                    <button type="button" class="chip" onclick="addToField('athletics', 'Varsity Tennis', this)">Tennis</button>
+                                    <button type="button" class="chip" onclick="addToField('athletics', 'Volleyball', this)">Volleyball</button>
+                                    <button type="button" class="chip" onclick="addToField('athletics', 'Wrestling', this)">Wrestling</button>
+                                    <button type="button" class="chip" onclick="addToField('athletics', 'Baseball', this)">Baseball</button>
+                                    <button type="button" class="chip" onclick="addToField('athletics', 'Softball', this)">Softball</button>
+                                </div>
+                            </div>
+
+                            <input type="text" id="athletics" name="athletics"
+                                   placeholder="Or type your sports (comma-separated)">
+                            <small style="color: #718096; font-size: 0.85em;">Click chips above or type custom sports. Include level: Varsity, JV, Club, Intramural</small>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="state">Home State</label>
+                            <input type="text" id="state" name="state"
+                                   placeholder="e.g., California, Texas (optional)">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="residency">Residency Status</label>
+                            <select id="residency" name="residency">
+                                <option value="">Select...</option>
+                                <option value="In-State">In-State</option>
+                                <option value="Out-of-State">Out-of-State</option>
+                                <option value="International">International</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group checkbox-group">
+                            <label>
+                                <input type="checkbox" id="first_gen" name="first_gen">
+                                <span>First-generation college student</span>
+                            </label>
+                        </div>
+
+                        <div class="form-group checkbox-group">
+                            <label>
+                                <input type="checkbox" id="military" name="military">
+                                <span>Military affiliated (veteran, dependent, ROTC)</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>⚙️ Search Options</h2>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="sort">Sort Results By</label>
+                            <select id="sort" name="sort">
+                                <option value="priority">Priority Score (Recommended)</option>
+                                <option value="deadline">Deadline (Urgent First)</option>
+                                <option value="amount">Award Amount (Highest First)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button type="submit" class="btn btn-primary" id="searchBtn">
+                        🔍 Search Scholarships
+                    </button>
+                    <button type="reset" class="btn btn-secondary">
+                        Clear Form
+                    </button>
+                </div>
+            </form>
+
+            <div id="loading" class="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Researching scholarships tailored to your profile...</p>
+            </div>
+        </div>
+
+        <div id="results" class="results-section" style="display: none;">
+            <div class="results-header">
+                <h2>📊 Your Personalized Scholarship Matches</h2>
+                <div id="profileSummary" class="profile-summary"></div>
+            </div>
+
+            <div class="stats-grid" id="statsGrid"></div>
+
+            <div class="download-section">
+                <h3>📥 Download Results</h3>
+                <div class="download-buttons" id="downloadButtons"></div>
+            </div>
+
+            <div class="scholarships-list" id="scholarshipsList"></div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Built with ❤️ by <a href="https://tsprofits.com" target="_blank">TSProfits.com</a></p>
+        <p>Author: Tim Smith | All Code owned by Tim</p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
