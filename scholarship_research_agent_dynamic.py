@@ -556,6 +556,38 @@ class DynamicScholarshipAgent:
                 False, "Diversity", 3.0
             )
 
+        # Latvian/Baltic heritage scholarships
+        if 'latvian' in heritage_lower or 'latvia' in heritage_lower or 'baltic' in heritage_lower:
+            self.add_scholarship(
+                "American Latvian Association Scholarship", 1000, 3000,
+                "$1,000-$3,000", "March 15, 2026", 2.5, 3.0,
+                "Students of Latvian heritage",
+                True, 500, 2, False, "Low",
+                "https://www.alausa.org/scholarships",
+                "For students with Latvian or Baltic heritage",
+                False, "Heritage", 3.0
+            )
+
+            self.add_scholarship(
+                "Baltic American Freedom Foundation Scholarship", 5000, 15000,
+                "$5,000-$15,000", "February 28, 2026", 3.0, 3.5,
+                "Students from Baltic states or of Baltic heritage",
+                True, 800, 3, True, "Medium",
+                "https://www.balticfreedom.org/scholarships",
+                "Study abroad and exchange programs available",
+                False, "Heritage", 5.0
+            )
+
+            self.add_scholarship(
+                "Latvian Welfare Association Scholarship", 500, 2000,
+                "$500-$2,000", "April 30, 2026", 2.5, 3.0,
+                "Students of Latvian descent",
+                True, 400, 1, False, "Low",
+                "https://www.latvianwelfare.org/",
+                "Supporting Latvian heritage students",
+                False, "Heritage", 2.5
+            )
+
         # Gender-based scholarships
         if 'female' in self.gender.lower() or 'woman' in self.gender.lower():
             self.add_scholarship(
