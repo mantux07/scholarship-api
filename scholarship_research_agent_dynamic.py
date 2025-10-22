@@ -9,9 +9,22 @@ Generates relevant scholarships based on student profile inputs
 
 import csv
 import json
+import sys
+import os
 from datetime import datetime, timedelta
 from typing import List, Dict, Optional
 from dataclasses import dataclass, asdict
+
+# Add webapp directory to path for database loader import
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'webapp'))
+
+# Import scholarship database loader if available
+try:
+    from scholarship_database_loader import ScholarshipDatabase
+    DATABASE_AVAILABLE = True
+except ImportError:
+    DATABASE_AVAILABLE = False
+    print("⚠️  Database loader not available, using hardcoded scholarships only")
 
 @dataclass
 class Scholarship:
@@ -226,6 +239,82 @@ class DynamicScholarshipAgent:
             'language', 'philosophy', 'psychology', 'sociology'
         ])
 
+    def load_scholarships_from_database(self):
+        """Load scholarships from JSON database"""
+        if not DATABASE_AVAILABLE:
+            return
+
+        try:
+            # Try to find the database file
+            # Check both webapp directory and parent directory
+            possible_paths = [
+                os.path.join(os.path.dirname(__file__), '..', 'webapp', 'scholarship_database.json'),
+                os.path.join(os.path.dirname(__file__), 'scholarship_database.json'),
+                'scholarship_database.json'
+            ]
+
+            db_path = None
+            for path in possible_paths:
+                if os.path.exists(path):
+                    db_path = path
+                    break
+
+            if not db_path:
+                print("⚠️  scholarship_database.json not found, skipping database load")
+                return
+
+            # Load database
+            db = ScholarshipDatabase(db_path)
+            db_scholarships = db.get_active_scholarships()
+
+            print(f"✓ Loading {len(db_scholarships)} scholarship(s) from database")
+
+            # Convert database scholarships to Scholarship objects
+            for s in db_scholarships:
+                # Map database fields to add_scholarship parameters
+                details = s.get('details', {})
+                requirements = s.get('requirements', {})
+
+                # Build eligibility string from requirements
+                eligibility_parts = []
+                if requirements:
+                    if 'heritage' in requirements:
+                        eligibility_parts.append(f"Heritage: {', '.join(requirements['heritage'])}")
+                    if 'major' in requirements:
+                        eligibility_parts.append(f"Major: {', '.join(requirements['major'])}")
+                    if 'citizenship' in requirements:
+                        eligibility_parts.append(f"Citizenship: {', '.join(requirements['citizenship'])}")
+
+                eligibility = "; ".join(eligibility_parts) if eligibility_parts else details.get('description', '')
+
+                # Add the scholarship
+                self.add_scholarship(
+                    name=s.get('name'),
+                    amount_min=s.get('amount_min', 0),
+                    amount_max=s.get('amount_max', 0),
+                    amount_display=s.get('amount_display', '$0'),
+                    deadline=s.get('deadline', 'Rolling'),
+                    min_gpa=s.get('gpa_min', 0.0),
+                    recommended_gpa=s.get('gpa_preferred', s.get('gpa_min', 0.0)),
+                    eligibility=eligibility,
+                    essay_required=details.get('essay_required', False),
+                    essay_word_count=details.get('essay_word_count', 0),
+                    rec_letters_required=details.get('letters_required', 0),
+                    interview_required=details.get('interview_required', False),
+                    competitiveness=details.get('competitiveness', 'Medium'),
+                    application_url=s.get('application_url', s.get('source_url', '')),
+                    notes=s.get('notes', ''),
+                    renewable=s.get('deadline_type') == 'annual',
+                    category=s.get('category', 'General'),
+                    estimated_hours=details.get('estimated_hours', 3.0)
+                )
+
+            print(f"✓ Successfully loaded database scholarships")
+
+        except Exception as e:
+            print(f"⚠️  Error loading database: {e}")
+            # Continue with hardcoded scholarships even if database fails
+
     def add_scholarship(self, name: str, amount_min: int, amount_max: int,
                        amount_display: str, deadline: str, min_gpa: float,
                        recommended_gpa: float, eligibility: str,
@@ -270,6 +359,9 @@ class DynamicScholarshipAgent:
 
     def research_scholarships(self):
         """Generate scholarships dynamically based on student profile"""
+
+        # === LOAD SCHOLARSHIPS FROM DATABASE ===
+        self.load_scholarships_from_database()
 
         # === NATIONAL MERIT-BASED SCHOLARSHIPS (Universal) ===
         self.add_universal_scholarships()
@@ -316,6 +408,22 @@ class DynamicScholarshipAgent:
         # === ADDITIONAL CORPORATE SCHOLARSHIPS (STEM ONLY) ===
         if self.is_stem_major():
             self.add_additional_corporate_scholarships()
+
+        # === REMOVE DUPLICATE SCHOLARSHIPS ===
+        # Database scholarships may overlap with hardcoded ones
+        total_before_dedup = len(self.scholarships)
+        seen_names = set()
+        unique_scholarships = []
+        for s in self.scholarships:
+            if s.name not in seen_names:
+                seen_names.add(s.name)
+                unique_scholarships.append(s)
+
+        self.scholarships = unique_scholarships
+        duplicates_removed = total_before_dedup - len(self.scholarships)
+
+        if duplicates_removed > 0:
+            print(f"✓ Removed {duplicates_removed} duplicate scholarship(s)")
 
         # === FILTER OUT EXPIRED SCHOLARSHIPS ===
         total_before = len(self.scholarships)
