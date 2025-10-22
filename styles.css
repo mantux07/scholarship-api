@@ -532,3 +532,66 @@ footer a {
         grid-template-columns: 1fr;
     }
 }
+
+/* === URGENCY BADGES === */
+.urgency-badge {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.95em;
+    margin-bottom: 15px;
+    text-align: center;
+    width: 100%;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.urgency-badge.critical {
+    background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+    color: white;
+    border: 2px solid #cc0000;
+    animation: pulse 2s infinite;
+    font-size: 1.05em;
+}
+
+.urgency-badge.high {
+    background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+    color: white;
+    border: 2px solid #e65100;
+}
+
+.urgency-badge.medium {
+    background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+    color: #333;
+    border: 2px solid #f57c00;
+}
+
+.urgency-badge.low {
+    background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
+    color: white;
+    border: 2px solid #1b5e20;
+}
+
+.urgency-badge.expired {
+    background: #9e9e9e;
+    color: white;
+    border: 2px solid #616161;
+    opacity: 0.7;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.85;
+        transform: scale(1.02);
+    }
+}
+
+/* Days remaining styling */
+.deadline-urgent {
+    color: #d32f2f;
+    font-weight: 700;
+}

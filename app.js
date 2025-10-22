@@ -151,9 +151,14 @@ function displayResults(data, formData) {
             'Very High': 'badge-very-high'
         }[scholarship.competitiveness] || 'badge-medium';
 
+        // Get urgency badge
+        const urgencyBadge = getUrgencyBadge(scholarship);
+        const daysRemainingText = getDaysRemainingText(scholarship);
+
         const card = document.createElement('div');
         card.className = `scholarship-card ${priorityClass}`;
         card.innerHTML = `
+            ${urgencyBadge}
             <div class="scholarship-header">
                 <div class="scholarship-title">${scholarship.name}</div>
                 <div class="priority-badge">Priority: ${scholarship.priority_score}/100</div>
@@ -166,11 +171,7 @@ function displayResults(data, formData) {
                 </div>
                 <div class="detail-item">
                     <span class="detail-label">Deadline</span>
-                    <span class="detail-value ${deadlineClass}">${scholarship.deadline}</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">Days Until Deadline</span>
-                    <span class="detail-value ${deadlineClass}">${scholarship.days_until_deadline}</span>
+                    <span class="detail-value ${deadlineClass}">${scholarship.deadline} ${daysRemainingText}</span>
                 </div>
                 <div class="detail-item">
                     <span class="detail-label">GPA Requirement</span>
@@ -298,4 +299,38 @@ function addToField(fieldId, value, buttonElement) {
         buttonElement.style.background = '';
         buttonElement.style.color = '';
     }, 300);
+}
+
+// Get urgency badge for scholarship
+function getUrgencyBadge(scholarship) {
+    const urgency = scholarship.urgency_level;
+
+    const badges = {
+        'critical': '<div class="urgency-badge critical">🔴 URGENT - Apply ASAP!</div>',
+        'high': '<div class="urgency-badge high">🟠 Due Soon</div>',
+        'medium': '<div class="urgency-badge medium">🟡 Upcoming Deadline</div>',
+        'low': '<div class="urgency-badge low">🟢 Plenty of Time</div>',
+        'none': '',
+        'expired': '<div class="urgency-badge expired">⚫ Expired</div>'
+    };
+
+    return badges[urgency] || '';
+}
+
+// Get days remaining text for display
+function getDaysRemainingText(scholarship) {
+    const days = scholarship.days_until_deadline;
+
+    if (days === 'TBD' || days >= 999) {
+        return '';
+    } else if (days === 0) {
+        return '(Due today!)';
+    } else if (days === 1) {
+        return '(1 day left)';
+    } else if (days < 30) {
+        return `(${days} days left)`;
+    } else if (days < 90) {
+        return `(${days} days)`;
+    }
+    return '';
 }

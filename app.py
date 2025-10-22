@@ -116,30 +116,14 @@ def search_scholarships():
             'average_priority': sum(s.priority_score for s in scholarships) / len(scholarships) if scholarships else 0
         }
 
-        # Convert scholarships to JSON-serializable format
+        # Convert scholarships to JSON-serializable format (includes urgency_level)
         scholarships_json = []
         for s in scholarships:
-            scholarships_json.append({
-                'name': s.name,
-                'amount_display': s.amount_display,
-                'amount_min': s.amount_min,
-                'amount_max': s.amount_max,
-                'deadline': s.deadline,
-                'days_until_deadline': s.days_until_deadline if s.days_until_deadline < 999 else 'TBD',
-                'min_gpa': s.min_gpa,
-                'recommended_gpa': s.recommended_gpa,
-                'essay_required': s.essay_required,
-                'essay_word_count': s.essay_word_count,
-                'rec_letters_required': s.rec_letters_required,
-                'interview_required': s.interview_required,
-                'competitiveness': s.competitiveness,
-                'category': s.category,
-                'renewable': s.renewable,
-                'estimated_hours': s.estimated_hours,
-                'application_url': s.application_url,
-                'notes': s.notes,
-                'priority_score': s.priority_score
-            })
+            s_dict = s.to_dict()
+            # Handle TBD case for days_until_deadline
+            if s_dict['days_until_deadline'] >= 999:
+                s_dict['days_until_deadline'] = 'TBD'
+            scholarships_json.append(s_dict)
 
         return jsonify({
             'success': True,

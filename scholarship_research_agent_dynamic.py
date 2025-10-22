@@ -39,6 +39,59 @@ class Scholarship:
     days_until_deadline: int = 999
     date_researched: str = ""
 
+    def is_expired(self) -> bool:
+        """Check if scholarship deadline has passed"""
+        if not self.deadline_date:
+            return False  # Keep rolling/varies deadlines
+
+        if self.deadline.lower() in ['rolling', 'varies', 'multiple deadlines', 'ongoing']:
+            return False
+
+        return datetime.now() > self.deadline_date
+
+    def get_urgency_level(self) -> str:
+        """Return urgency level: critical, high, medium, low, none"""
+        if not self.deadline_date or self.deadline.lower() in ['rolling', 'varies', 'multiple deadlines', 'ongoing']:
+            return "none"
+
+        if self.days_until_deadline <= 0:
+            return "expired"
+        elif self.days_until_deadline < 7:
+            return "critical"
+        elif self.days_until_deadline < 30:
+            return "high"
+        elif self.days_until_deadline < 90:
+            return "medium"
+        else:
+            return "low"
+
+    def to_dict(self) -> dict:
+        """Convert scholarship to dictionary for JSON serialization"""
+        return {
+            'name': self.name,
+            'amount_min': self.amount_min,
+            'amount_max': self.amount_max,
+            'amount_display': self.amount_display,
+            'deadline': self.deadline,
+            'deadline_date': self.deadline_date.strftime("%Y-%m-%d") if self.deadline_date else None,
+            'days_until_deadline': self.days_until_deadline,
+            'urgency_level': self.get_urgency_level(),
+            'min_gpa': self.min_gpa,
+            'recommended_gpa': self.recommended_gpa,
+            'eligibility': self.eligibility,
+            'essay_required': self.essay_required,
+            'essay_word_count': self.essay_word_count,
+            'rec_letters_required': self.rec_letters_required,
+            'interview_required': self.interview_required,
+            'competitiveness': self.competitiveness,
+            'application_url': self.application_url,
+            'notes': self.notes,
+            'renewable': self.renewable,
+            'category': self.category,
+            'estimated_hours': self.estimated_hours,
+            'priority_score': self.priority_score
+        }
+
 class DynamicScholarshipAgent:
     """Dynamic scholarship search based on student profile"""
 
@@ -263,6 +316,14 @@ class DynamicScholarshipAgent:
         # === ADDITIONAL CORPORATE SCHOLARSHIPS (STEM ONLY) ===
         if self.is_stem_major():
             self.add_additional_corporate_scholarships()
+
+        # === FILTER OUT EXPIRED SCHOLARSHIPS ===
+        total_before = len(self.scholarships)
+        self.scholarships = [s for s in self.scholarships if not s.is_expired()]
+        expired_count = total_before - len(self.scholarships)
+
+        if expired_count > 0:
+            print(f"✓ Filtered out {expired_count} expired scholarship(s)")
 
     def add_universal_scholarships(self):
         """Add universal merit-based scholarships applicable to all students"""
