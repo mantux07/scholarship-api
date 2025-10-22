@@ -394,16 +394,6 @@ class DynamicScholarshipAgent:
             False, "Corporate", 5.0
         )
 
-        self.add_scholarship(
-            "Society of Women Engineers (SWE) Scholarship", 1000, 15000,
-            "$1,000-$15,000", "February 15, 2026", 3.0, 3.5,
-            "Engineering students, merit-based",
-            True, 600, 2, False, "Medium",
-            "https://swe.org/scholarships/",
-            "Open to all genders",
-            False, "Professional Org", 4.0
-        )
-
     def add_business_scholarships(self):
         """Add business-specific scholarships"""
 
@@ -491,16 +481,6 @@ class DynamicScholarshipAgent:
             )
 
             self.add_scholarship(
-                "National Society of Black Engineers (NSBE) Scholarship", 1000, 10000,
-                "$1,000-$10,000", "January 31, 2026", 3.0, 3.3,
-                "Black/African American engineering students",
-                True, 500, 2, False, "Medium",
-                "https://nsbe.org/scholarships",
-                "Multiple programs available",
-                False, "Diversity", 4.0
-            )
-
-            self.add_scholarship(
                 "Thurgood Marshall College Fund STEM Scholarship", 3000, 6200,
                 "$3,000-$6,200", "March 15, 2026", 3.0, 3.25,
                 "Students of color in STEM",
@@ -519,16 +499,6 @@ class DynamicScholarshipAgent:
                 True, 600, 1, False, "Medium",
                 "https://www.hsf.net/scholarship",
                 "One of largest Latinx scholarship programs",
-                False, "Diversity", 3.5
-            )
-
-            self.add_scholarship(
-                "Society of Hispanic Professional Engineers (SHPE)", 1000, 5000,
-                "$1,000-$5,000", "April 30, 2026", 3.0, 3.3,
-                "Hispanic/Latinx students",
-                True, 500, 2, False, "Medium",
-                "https://shpe.org/students/scholarships/",
-                "Engineering and STEM focus",
                 False, "Diversity", 3.5
             )
 
