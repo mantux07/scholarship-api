@@ -9,7 +9,6 @@ openpyxl==3.1.2
 reportlab==4.0.7
 gunicorn==21.2.0
 
-# Auto-refresh system dependencies
-beautifulsoup4==4.12.2
-requests==2.31.0
-lxml==4.9.3
+# Note: Web scraping dependencies (beautifulsoup4, requests, lxml) are NOT needed
+# for the Flask API. They are only used by scholarship_updater.py which runs on
+# GitHub Actions. The API only reads the pre-generated scholarship_database.json file.
