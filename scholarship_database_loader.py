@@ -133,6 +133,22 @@ class ScholarshipDatabase:
             if not any(year in student_year for year in required_years):
                 return False
 
+        # Check state (geographic requirement)
+        if "state" in requirements:
+            student_state = profile.get("state", "").lower()
+            required_states = [s.lower() for s in requirements["state"]]
+            # Check if student's state matches any required state
+            if not any(req_state.lower() in student_state or student_state in req_state.lower() for req_state in requirements["state"]):
+                return False
+
+        # Check residency status (e.g., Undocumented, DACA, TPS)
+        if "residency" in requirements:
+            student_residency = profile.get("residency", "").lower()
+            required_residency = [r.lower() for r in requirements["residency"]]
+            # Must match one of the residency statuses
+            if not any(req in student_residency for req in required_residency):
+                return False
+
         return True
 
     def get_scholarship_by_id(self, scholarship_id: str) -> Optional[Dict]:
