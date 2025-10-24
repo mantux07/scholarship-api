@@ -439,24 +439,27 @@ class DynamicScholarshipAgent:
         """Add universal merit-based scholarships applicable to all students"""
 
         # These scholarships require US citizenship - skip for international students
-        if self.residency.lower() != "international":
+        # Coca-Cola is only for high school seniors
+        if self.residency.lower() != "international" and "high school senior" in self.year.lower():
             self.add_scholarship(
                 "Coca-Cola Scholars Program", 20000, 20000,
                 "$20,000", "October 31, 2025", 3.0, 3.5,
                 "Leadership, academic excellence, community service, US citizenship required",
                 True, 1000, 2, True, "Very High",
                 "https://www.coca-colascholarsfoundation.org",
-                "One of largest corporate scholarship programs; US citizens only",
+                "One of largest corporate scholarship programs; high school seniors only",
                 False, "National", 7.0
             )
 
+        # Dell, Horatio Alger, and Elks are also for high school seniors
+        if self.residency.lower() != "international" and "high school senior" in self.year.lower():
             self.add_scholarship(
                 "Dell Scholars Program", 20000, 20000,
                 "$20,000 + laptop", "December 1, 2025", 2.4, 3.0,
                 "Students who overcome significant obstacles, US citizenship required",
                 True, 800, 2, True, "High",
                 "https://www.dellscholars.org",
-                "Focus on persistence and determination; US citizens only",
+                "Focus on persistence and determination; high school seniors only",
                 True, "Corporate", 6.0
             )
 
@@ -466,7 +469,7 @@ class DynamicScholarshipAgent:
                 "Overcoming adversity, financial need, US citizenship required",
                 True, 800, 2, True, "Medium",
                 "https://scholars.horatioalger.org",
-                "Focus on resilience and character; US citizens only",
+                "Focus on resilience and character; high school seniors only",
                 False, "National", 5.0
             )
 
@@ -476,7 +479,7 @@ class DynamicScholarshipAgent:
                 "Leadership, scholarship, financial need, US citizenship required",
                 True, 1000, 2, False, "High",
                 "https://www.elks.org/scholars/scholarships/MVS.cfm",
-                "Very competitive national scholarship; US citizens only",
+                "Very competitive national scholarship; high school seniors only",
                 True, "National", 6.0
             )
 
@@ -520,25 +523,27 @@ class DynamicScholarshipAgent:
 
         # === PURDUE UNIVERSITY SPECIFIC SCHOLARSHIPS ===
         if 'purdue' in self.university.lower():
-            self.add_scholarship(
-                "Purdue Engineering Academic Excellence Scholarship", 2000, 5000,
-                "$2,000-$5,000", "March 1, 2026", 3.5, 3.7,
-                "Sophomore engineering students, demonstrated academic excellence",
-                True, 600, 2, False, "High",
-                "https://engineering.purdue.edu/Engr/Academics/Scholarships",
-                "Purdue College of Engineering merit award",
-                False, "Purdue", 4.0
-            )
+            # These are for current college students only (not high school)
+            if "high school senior" not in self.year.lower():
+                self.add_scholarship(
+                    "Purdue Engineering Academic Excellence Scholarship", 2000, 5000,
+                    "$2,000-$5,000", "March 1, 2026", 3.5, 3.7,
+                    "Sophomore engineering students, demonstrated academic excellence",
+                    True, 600, 2, False, "High",
+                    "https://engineering.purdue.edu/Engr/Academics/Scholarships",
+                    "Purdue College of Engineering merit award",
+                    False, "Purdue", 4.0
+                )
 
-            self.add_scholarship(
-                "Purdue Trustees Scholarship (Continuing)", 8000, 16000,
-                "$8,000-$16,000", "February 1, 2026", 3.8, 3.9,
-                "Current Purdue students, outstanding academic achievement",
-                True, 800, 3, True, "Very High",
-                "https://www.purdue.edu/financialaid/scholarships/",
-                "Highly prestigious Purdue scholarship",
-                True, "Purdue", 6.0
-            )
+                self.add_scholarship(
+                    "Purdue Trustees Scholarship (Continuing)", 8000, 16000,
+                    "$8,000-$16,000", "February 1, 2026", 3.8, 3.9,
+                    "Current Purdue students, outstanding academic achievement",
+                    True, 800, 3, True, "Very High",
+                    "https://www.purdue.edu/financialaid/scholarships/",
+                    "Highly prestigious Purdue scholarship",
+                    True, "Purdue", 6.0
+                )
 
             self.add_scholarship(
                 "Engineering Education Foundation Scholarships", 1500, 5000,

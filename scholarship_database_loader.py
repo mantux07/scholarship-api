@@ -130,7 +130,8 @@ class ScholarshipDatabase:
         if "year" in requirements:
             student_year = profile.get("year", "").lower()
             required_years = [y.lower() for y in requirements["year"]]
-            if not any(year in student_year for year in required_years):
+            # Use exact matching to avoid "Senior" matching "High School Senior"
+            if not any(student_year == year for year in required_years):
                 return False
 
         # Check state (geographic requirement)

@@ -50,6 +50,7 @@ def search_scholarships():
         gpa = float(data.get('gpa', 3.5))
         university = data.get('university', 'University')
         major = data.get('major', 'Engineering')
+        education_level = data.get('education_level', '')
         year = data.get('year', 'Sophomore')
         heritage = data.get('heritage', '')
         gender = data.get('gender', '')
@@ -68,6 +69,7 @@ def search_scholarships():
             'gpa': gpa,
             'university': university,
             'major': major,
+            'education_level': education_level or 'Not specified',
             'year': year,
             'heritage': heritage or 'Not specified',
             'gender': gender or 'Not specified',
@@ -155,6 +157,7 @@ def download_file(format_type):
             'gpa': gpa,
             'university': data.get('university', 'University'),
             'major': data.get('major', 'Engineering'),
+            'education_level': data.get('education_level', '') or 'Not specified',
             'year': data.get('year', 'Sophomore'),
             'heritage': data.get('heritage', '') or 'Not specified',
             'gender': data.get('gender', '') or 'Not specified',

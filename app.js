@@ -4,6 +4,35 @@
 // API Configuration - UPDATE THIS URL after deploying backend
 const API_URL = 'https://scholarship-api-6j7w.onrender.com'; // TODO: Update this after backend deployment
 
+// Dynamic year dropdown filtering based on education level
+document.getElementById('education_level').addEventListener('change', function() {
+    const educationLevel = this.value;
+    const yearSelect = document.getElementById('year');
+    const yearOptions = yearSelect.querySelectorAll('option');
+
+    // Reset year selection
+    yearSelect.value = '';
+
+    // Show/hide options based on education level
+    yearOptions.forEach(option => {
+        if (option.value === '') {
+            // Keep the placeholder
+            option.style.display = 'block';
+            option.disabled = false;
+            return;
+        }
+
+        const optionLevel = option.getAttribute('data-level');
+        if (optionLevel === educationLevel) {
+            option.style.display = 'block';
+            option.disabled = false;
+        } else {
+            option.style.display = 'none';
+            option.disabled = true;
+        }
+    });
+});
+
 // Form submission handler
 document.getElementById('scholarshipForm').addEventListener('submit', async function(e) {
     e.preventDefault();
@@ -12,6 +41,7 @@ document.getElementById('scholarshipForm').addEventListener('submit', async func
     const formData = {
         university: document.getElementById('university').value,
         major: document.getElementById('major').value,
+        education_level: document.getElementById('education_level').value,
         year: document.getElementById('year').value,
         gpa: parseFloat(document.getElementById('gpa').value),
         discipline: document.getElementById('discipline').value,
