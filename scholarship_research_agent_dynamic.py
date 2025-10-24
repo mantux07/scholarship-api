@@ -265,9 +265,11 @@ class DynamicScholarshipAgent:
 
             # Load database
             db = ScholarshipDatabase(db_path)
-            db_scholarships = db.get_active_scholarships()
 
-            print(f"✓ Loading {len(db_scholarships)} scholarship(s) from database")
+            # Filter scholarships by student profile
+            db_scholarships = db.get_scholarships_for_profile(self.student_profile)
+
+            print(f"✓ Loading {len(db_scholarships)} scholarship(s) from database (filtered by profile)")
 
             # Convert database scholarships to Scholarship objects
             for s in db_scholarships:
@@ -742,6 +744,8 @@ class DynamicScholarshipAgent:
         """Add diversity and heritage-based scholarships"""
 
         heritage_lower = self.heritage.lower()
+        # Split into words to avoid substring matches (e.g., 'asian' matching 'caucasian')
+        heritage_words = heritage_lower.split()
 
         # African American scholarships
         if 'african' in heritage_lower or 'black' in heritage_lower:
@@ -778,7 +782,8 @@ class DynamicScholarshipAgent:
             )
 
         # Asian American scholarships
-        if 'asian' in heritage_lower or 'pacific' in heritage_lower:
+        # Use word-based matching to avoid matching 'asian' in 'caucasian'
+        if any(word in ['asian', 'pacific', 'chinese', 'japanese', 'korean', 'vietnamese', 'filipino', 'indian'] for word in heritage_words):
             self.add_scholarship(
                 "Asian & Pacific Islander American Scholarship Fund", 2500, 20000,
                 "$2,500-$20,000", "January 15, 2026", 2.7, 3.3,
