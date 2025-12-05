@@ -989,6 +989,18 @@ class DynamicScholarshipAgent:
             False, "Disability", 5.0
         )
 
+        # Georgia-specific disability grants
+        if 'georgia' in self.state.lower() and self.residency.lower() in ['in-state', 'in state']:
+            self.add_scholarship(
+                "Georgia Inclusive Postsecondary Education (IPSE) Grant", 1000, 5000,
+                "Varies", "Contact institution", 2.0, 3.0,
+                "Georgia students with intellectual/developmental disabilities (including autism)",
+                True, 200, 1, False, "Low",
+                "https://www.gafutures.org/hope-state-aid-programs/scholarships-grants/",
+                "Must be enrolled in approved IPSE program at USG or TCSG institution",
+                True, "State/Disability", 4.0
+            )
+
         # Microsoft Disability Scholarship - removed (broken link/404 error)
 
         # Incight Scholarships - removed (broken link/404 error)
