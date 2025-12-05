@@ -125,6 +125,7 @@ class DynamicScholarshipAgent:
         self.residency = self.student_profile.get('residency', 'Not specified')
         self.first_gen = self.student_profile.get('first_gen', False)
         self.military = self.student_profile.get('military', False)
+        self.disability = self.student_profile.get('disability', '')
         self.skills = self.student_profile.get('skills', '')
         self.clubs = self.student_profile.get('clubs', '')
         self.athletics = self.student_profile.get('athletics', '')
@@ -387,6 +388,10 @@ class DynamicScholarshipAgent:
         # === MILITARY SCHOLARSHIPS ===
         if self.military:
             self.add_military_scholarships()
+
+        # === DISABILITY SCHOLARSHIPS ===
+        if self.disability and self.disability.lower() != 'not specified':
+            self.add_disability_scholarships()
 
         # === CORPORATE SCHOLARSHIPS (ONLY FOR STEM MAJORS) ===
         if self.is_stem_major():
@@ -907,6 +912,174 @@ class DynamicScholarshipAgent:
             "For children/spouses of active duty or veterans",
             True, "Military", 4.0
         )
+
+    def add_disability_scholarships(self):
+        """Add scholarships for students with disabilities"""
+        disability_lower = self.disability.lower()
+
+        # Universal disability scholarships (all types)
+        self.add_scholarship(
+            "National Federation of the Blind Scholarship", 3000, 12000,
+            "$3,000-$12,000", "March 31, 2026", 2.5, 3.0,
+            "Students who are blind or have significant visual impairment",
+            True, 750, 2, False, "Medium",
+            "https://www.nfb.org/scholarships",
+            "Multiple scholarships available for blind students",
+            False, "Disability", 4.5
+        )
+
+        self.add_scholarship(
+            "Google Lime Scholarship", 10000, 10000,
+            "$10,000", "December 11, 2025", 3.0, 3.5,
+            "Students with disabilities pursuing CS/Engineering",
+            True, 600, 2, False, "High",
+            "https://www.limeconnect.com/opportunities/page/google-lime-scholarship",
+            "For students with visible or invisible disabilities in tech fields",
+            False, "Disability", 5.0
+        )
+
+        self.add_scholarship(
+            "Microsoft Disability Scholarship", 5000, 5000,
+            "$5,000", "February 15, 2026", 3.0, 3.5,
+            "High school seniors or undergrads with disabilities pursuing STEM",
+            True, 500, 1, False, "Medium",
+            "https://www.microsoft.com/en-us/diversity/programs/scholarships",
+            "For students with disabilities pursuing technology careers",
+            False, "Disability", 4.5
+        )
+
+        self.add_scholarship(
+            "Incight Scholarships", 500, 2500,
+            "$500-$2,500", "March 1, 2026", 2.5, 3.0,
+            "Students with documented disabilities",
+            True, 400, 1, False, "Low",
+            "https://incight.org/scholarships",
+            "Multiple awards for students with any documented disability",
+            False, "Disability", 3.5
+        )
+
+        # Autism spectrum specific
+        if 'autism' in disability_lower:
+            self.add_scholarship(
+                "Organization for Autism Research (OAR) Scholarship", 3000, 3000,
+                "$3,000", "April 4, 2026", 2.5, 3.0,
+                "Students on the autism spectrum attending college",
+                True, 500, 2, False, "Medium",
+                "https://researchautism.org/scholarships/",
+                "Specifically for students with ASD diagnosis",
+                False, "Disability", 4.0
+            )
+
+            self.add_scholarship(
+                "Autism Scholarship - ACT Today!", 500, 2000,
+                "$500-$2,000", "Rolling", 2.0, 2.5,
+                "Students with autism pursuing post-secondary education",
+                True, 300, 1, False, "Low",
+                "https://act-today.org/scholarships",
+                "Multiple smaller scholarships throughout the year",
+                False, "Disability", 3.0
+            )
+
+        # ADHD and Learning Disabilities
+        if any(x in disability_lower for x in ['adhd', 'learning disability', 'dyslexia']):
+            self.add_scholarship(
+                "Anne Ford Scholarship", 10000, 10000,
+                "$10,000", "April 30, 2026", 3.0, 3.5,
+                "High school seniors with documented learning disabilities",
+                True, 800, 3, False, "High",
+                "https://ncld.org/scholarships/anne-ford-scholarship/",
+                "Prestigious award from National Center for Learning Disabilities",
+                False, "Disability", 5.5
+            )
+
+            self.add_scholarship(
+                "Allegra Ford Thomas Scholarship", 5000, 5000,
+                "$5,000", "April 30, 2026", 2.5, 3.0,
+                "Graduating high school seniors with learning disabilities",
+                True, 600, 2, False, "Medium",
+                "https://ncld.org/scholarships/allegra-ford-thomas-scholarship/",
+                "From NCLD, for students pursuing undergraduate degrees",
+                False, "Disability", 4.0
+            )
+
+        if 'dyslexia' in disability_lower:
+            self.add_scholarship(
+                "Marion Huber Learning Through Listening Award", 2000, 6000,
+                "$2,000-$6,000", "March 15, 2026", 3.0, 3.5,
+                "High school seniors with learning disabilities using audiobooks",
+                True, 500, 3, False, "Medium",
+                "https://learningally.org/scholarships",
+                "For students who benefit from audiobooks due to dyslexia/LD",
+                False, "Disability", 4.0
+            )
+
+        # Physical disabilities
+        if 'physical' in disability_lower:
+            self.add_scholarship(
+                "Lime Connect Pathways Scholarship", 1000, 10000,
+                "$1,000-$10,000", "December 11, 2025", 2.5, 3.0,
+                "Students with visible or invisible disabilities",
+                True, 400, 1, False, "Medium",
+                "https://www.limeconnect.com/opportunities",
+                "Multiple corporate partners; broad disability categories",
+                False, "Disability", 4.0
+            )
+
+            self.add_scholarship(
+                "Boomer Esiason Foundation Scholarship", 10000, 10000,
+                "$10,000", "May 31, 2026", 2.5, 3.0,
+                "Students with cystic fibrosis",
+                True, 600, 2, False, "Medium",
+                "https://esiason.org/thriving-with-cf/scholarships/",
+                "For students living with CF pursuing higher education",
+                False, "Disability", 4.5
+            )
+
+        # Visual impairments
+        if any(x in disability_lower for x in ['visual', 'blind', 'vision']):
+            self.add_scholarship(
+                "American Council of the Blind Scholarship", 1000, 5000,
+                "$1,000-$5,000", "February 15, 2026", 2.5, 3.0,
+                "Blind or visually impaired students",
+                True, 500, 2, False, "Medium",
+                "https://www.acb.org/scholarships",
+                "20+ scholarships for blind/low vision students",
+                False, "Disability", 4.0
+            )
+
+        # Hearing impairments
+        if any(x in disability_lower for x in ['hearing', 'deaf', 'hard of hearing']):
+            self.add_scholarship(
+                "Alexander Graham Bell Scholarship", 1000, 10000,
+                "$1,000-$10,000", "March 5, 2026", 3.0, 3.5,
+                "Students who are deaf or hard of hearing",
+                True, 800, 3, False, "High",
+                "https://www.agbell.org/Scholarships",
+                "For students with hearing loss using listening and spoken language",
+                False, "Disability", 5.0
+            )
+
+            self.add_scholarship(
+                "Sertoma Scholarship for Hard of Hearing", 1000, 1000,
+                "$1,000", "May 1, 2026", 2.5, 3.0,
+                "Students with hearing loss",
+                True, 400, 2, False, "Low",
+                "https://sertoma.org/what-we-do/scholarships/",
+                "For students with clinically significant bilateral hearing loss",
+                False, "Disability", 3.5
+            )
+
+        # Chronic illness
+        if 'chronic' in disability_lower:
+            self.add_scholarship(
+                "Vitality Medical Scholarship", 500, 500,
+                "$500", "September 30, 2026", 2.0, 2.5,
+                "Students with chronic health conditions or disabilities",
+                True, 300, 0, False, "Low",
+                "https://www.vitalitymedical.com/scholarship.html",
+                "Biannual scholarship for students managing chronic conditions",
+                False, "Disability", 3.0
+            )
 
     def add_corporate_scholarships(self):
         """Add major corporate scholarships"""

@@ -51,6 +51,7 @@ document.getElementById('scholarshipForm').addEventListener('submit', async func
         residency: document.getElementById('residency').value,
         first_gen: document.getElementById('first_gen').checked,
         military: document.getElementById('military').checked,
+        disability: document.getElementById('disability').value,
         skills: document.getElementById('skills').value,
         clubs: document.getElementById('clubs').value,
         athletics: document.getElementById('athletics').value,

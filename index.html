@@ -278,6 +278,32 @@
                             </label>
                         </div>
                     </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="disability">Disability Status</label>
+
+                            <div class="popular-chips">
+                                <p style="font-size: 0.9em; color: #666; margin-bottom: 0.5rem;">
+                                    Click to add (can select multiple):
+                                </p>
+                                <div class="chips-container">
+                                    <button type="button" class="chip" onclick="addToField('disability', 'Autism', this)">Autism Spectrum</button>
+                                    <button type="button" class="chip" onclick="addToField('disability', 'ADHD', this)">ADHD</button>
+                                    <button type="button" class="chip" onclick="addToField('disability', 'Dyslexia', this)">Dyslexia</button>
+                                    <button type="button" class="chip" onclick="addToField('disability', 'Learning Disability', this)">Learning Disability</button>
+                                    <button type="button" class="chip" onclick="addToField('disability', 'Physical Disability', this)">Physical Disability</button>
+                                    <button type="button" class="chip" onclick="addToField('disability', 'Visual Impairment', this)">Visual Impairment</button>
+                                    <button type="button" class="chip" onclick="addToField('disability', 'Hearing Impairment', this)">Hearing Impairment</button>
+                                    <button type="button" class="chip" onclick="addToField('disability', 'Chronic Illness', this)">Chronic Illness</button>
+                                </div>
+                            </div>
+
+                            <input type="text" id="disability" name="disability"
+                                   placeholder="Or type custom disability (comma-separated)">
+                            <small style="color: #718096; font-size: 0.85em;">Optional: This helps match you with disability-specific scholarships. All information is confidential.</small>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="section">

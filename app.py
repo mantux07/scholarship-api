@@ -58,6 +58,7 @@ def search_scholarships():
         residency = data.get('residency', '')
         first_gen = data.get('first_gen', False)
         military = data.get('military', False)
+        disability = data.get('disability', '')
         discipline = data.get('discipline', '')
         skills = data.get('skills', '')
         clubs = data.get('clubs', '')
@@ -77,6 +78,7 @@ def search_scholarships():
             'residency': residency or 'Not specified',
             'first_gen': first_gen,
             'military': military,
+            'disability': disability or 'Not specified',
             'discipline': discipline or 'General',
             'skills': skills or 'Not specified',
             'clubs': clubs or 'Not specified',
@@ -165,6 +167,7 @@ def download_file(format_type):
             'residency': data.get('residency', '') or 'Not specified',
             'first_gen': data.get('first_gen', False),
             'military': data.get('military', False),
+            'disability': data.get('disability', '') or 'Not specified',
             'discipline': discipline or 'General',
             'skills': data.get('skills', '') or 'Not specified',
             'clubs': data.get('clubs', '') or 'Not specified',
