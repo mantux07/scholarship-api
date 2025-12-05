@@ -644,6 +644,129 @@ class DynamicScholarshipAgent:
             False, "Corporate", 5.0
         )
 
+        # === ADDITIONAL MERIT-BASED STEM SCHOLARSHIPS ===
+
+        # NSF S-STEM Program
+        if 'stem' in self.discipline.lower() or any(field in self.major.lower() for field in ['science', 'technology', 'engineering', 'math']):
+            self.add_scholarship(
+                "NSF S-STEM Scholarship Program", 1000, 10000,
+                "$1,000-$10,000", "Varies by institution", 3.0, 3.5,
+                "STEM students at participating universities",
+                True, 500, 2, False, "Medium",
+                "https://www.nsf.gov/funding/opportunities/s-stem-nsf-scholarships-science-technology-engineering-mathematics",
+                "Check with your university's STEM department",
+                False, "Federal/STEM", 4.0
+            )
+
+        # IEEE Computer Society Scholarship
+        if 'computer' in self.major.lower() or 'ieee' in self.clubs.lower():
+            self.add_scholarship(
+                "IEEE Computer Society Scholarship", 2000, 4000,
+                "$2,000-$4,000", "May 31, 2026", 2.5, 3.0,
+                "Computer Science/Engineering students, IEEE members preferred",
+                True, 300, 2, False, "Medium",
+                "https://www.computer.org/volunteering/awards/scholarships",
+                "IEEE membership strongly encouraged",
+                False, "Professional Org", 3.5
+            )
+
+        # NCWIT Collegiate Award
+        if self.gender.lower() in ['female', 'woman', 'non-binary'] and 'computer' in self.major.lower():
+            self.add_scholarship(
+                "NCWIT Collegiate Award", 5000, 10000,
+                "$5,000-$10,000", "November 2025", 3.0, 3.5,
+                "Women in computing with demonstrated leadership",
+                True, 600, 3, False, "High",
+                "https://www.aspirations.org/awards-programs/aic-collegiate-award",
+                "Recognizes technical and leadership accomplishments",
+                False, "Diversity/Tech", 5.0
+            )
+
+        # Palantir Women in Technology Scholarship
+        if self.gender.lower() in ['female', 'woman'] and 'computer' in self.major.lower():
+            self.add_scholarship(
+                "Palantir Women in Technology Scholarship", 7000, 7000,
+                "$7,000", "April 1, 2026", 3.0, 3.5,
+                "Women studying CS/Engineering with strong academic record",
+                True, 500, 2, False, "High",
+                "https://www.palantir.com/careers/students/scholarship/wit-north-america/",
+                "Includes mentorship and networking opportunities",
+                False, "Corporate", 5.5
+            )
+
+        # ASME Scholarship
+        if 'mechanical' in self.major.lower() or 'asme' in self.clubs.lower():
+            self.add_scholarship(
+                "American Society of Mechanical Engineers (ASME) Scholarship", 2500, 11000,
+                "$2,500-$11,000", "March 15, 2026", 3.0, 3.5,
+                "Mechanical Engineering students, ASME membership required",
+                True, 600, 2, False, "Medium",
+                "https://www.asme.org/asme-programs/students-and-faculty/scholarships",
+                "Multiple scholarship programs available",
+                False, "Professional Org", 4.5
+            )
+
+        # SAE Engineering Scholarships
+        if 'engineering' in self.major.lower() or 'automotive' in self.major.lower():
+            self.add_scholarship(
+                "SAE Engineering Scholarships", 1000, 5000,
+                "$1,000-$5,000", "March 15, 2026", 3.0, 3.5,
+                "Engineering students interested in mobility/automotive",
+                True, 400, 2, False, "Medium",
+                "https://www.sae.org/participate/scholarships",
+                "Multiple scholarships for various engineering disciplines",
+                False, "Professional Org", 3.5
+            )
+
+        # American Chemical Society Scholars Program
+        if 'chemistry' in self.major.lower() or 'chemical' in self.major.lower():
+            self.add_scholarship(
+                "American Chemical Society Scholars Program", 1000, 5000,
+                "$1,000-$5,000 (renewable)", "March 1, 2026", 3.0, 3.5,
+                "Chemistry/Chemical Engineering students from underrepresented groups",
+                True, 500, 2, False, "Medium",
+                "https://www.acs.org/funding/scholarships/acsscholars.html",
+                "Renewable for up to 4 years",
+                False, "Professional Org", 4.0
+            )
+
+        # Davidson Fellows Scholarship
+        student_gpa = float(self.student_profile.get('gpa', 0))
+        if student_gpa >= 3.5:
+            self.add_scholarship(
+                "Davidson Fellows Scholarship", 10000, 50000,
+                "$10,000-$50,000", "Second Wednesday in February 2026", 3.5, 4.0,
+                "Students with extraordinary accomplishments in STEM, literature, music",
+                True, 1200, 4, False, "Very High",
+                "https://www.davidsongifted.org/gifted-programs/fellows-scholarship/",
+                "Highly prestigious, requires significant original work",
+                False, "National Merit", 8.0
+            )
+
+        # Hispanic Scholarship Fund
+        if 'hispanic' in self.heritage.lower() or 'latino' in self.heritage.lower() or 'latina' in self.heritage.lower():
+            self.add_scholarship(
+                "Hispanic Scholarship Fund", 500, 5000,
+                "$500-$5,000", "February 15, 2026", 3.0, 3.5,
+                "Hispanic/Latino students pursuing any major",
+                True, 600, 2, False, "Medium",
+                "https://www.hsf.net/scholarship",
+                "Merit-based, renewable scholarship",
+                False, "Diversity", 4.0
+            )
+
+        # UNCF Scholarships
+        if 'black' in self.heritage.lower() or 'african american' in self.heritage.lower():
+            self.add_scholarship(
+                "United Negro College Fund (UNCF) Scholarships", 2000, 10000,
+                "$2,000-$10,000", "Varies by program", 2.5, 3.5,
+                "African American students, multiple scholarship programs",
+                True, 700, 2, False, "Medium",
+                "https://www.uncf.org/scholarships",
+                "Over 400 scholarship programs available",
+                False, "Diversity", 4.5
+            )
+
     def add_business_scholarships(self):
         """Add business-specific scholarships"""
 
