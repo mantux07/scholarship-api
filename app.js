@@ -2,7 +2,8 @@
 // Note: All Code owned by Tim
 
 // API Configuration - UPDATE THIS URL after deploying backend
-const API_URL = 'https://scholarship-api-6j7w.onrender.com'; // TODO: Update this after backend deployment
+const API_URL = 'http://127.0.0.1:8083'; // Local development server
+// const API_URL = 'https://scholarship-api-6j7w.onrender.com'; // Production (deploy updated code first)
 
 // Dynamic year dropdown filtering based on education level
 document.getElementById('education_level').addEventListener('change', function() {

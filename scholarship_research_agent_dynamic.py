@@ -493,38 +493,9 @@ class DynamicScholarshipAgent:
 
         uni_name = self.university
 
-        # Generic university scholarships
-        self.add_scholarship(
-            f"{uni_name} Foundation Scholarship", 1500, 5000,
-            "$1,500-$5,000", "March 1, 2026", 3.0, 3.5,
-            f"{uni_name} students with financial need and academic merit",
-            True, 500, 2, False, "Medium",
-            f"https://www.{uni_name.lower().replace(' ', '')}.edu/scholarships",
-            f"Contact {uni_name} Financial Aid office",
-            True, "University", 3.0
-        )
+        # Generic university scholarships - removed (dynamic URL generation creates invalid domains)
 
-        self.add_scholarship(
-            f"{uni_name} Academic Excellence Award", 2000, 8000,
-            "$2,000-$8,000", "February 15, 2026", 3.5, 3.7,
-            f"Current {uni_name} students with outstanding academic achievement",
-            True, 750, 3, True, "High",
-            f"https://www.{uni_name.lower().replace(' ', '')}.edu/financialaid",
-            "Highly competitive merit-based award",
-            True, "University", 5.0
-        )
-
-        # Residency-based scholarships
-        if "out-of-state" in self.residency.lower() or "out of state" in self.residency.lower():
-            self.add_scholarship(
-                f"{uni_name} Out-of-State Merit Award", 1000, 4000,
-                "$1,000-$4,000", "March 1, 2026", 3.3, 3.5,
-                "Out-of-state students, automatic consideration",
-                False, 0, 0, False, "Medium",
-                f"https://www.{uni_name.lower().replace(' ', '')}.edu/financialaid",
-                "Contact Financial Aid for eligibility",
-                True, "University", 1.0
-            )
+        # Residency-based scholarships - removed (dynamic URL generation creates invalid domains)
 
         # === PURDUE UNIVERSITY SPECIFIC SCHOLARSHIPS ===
         if 'purdue' in self.university.lower():
@@ -540,15 +511,7 @@ class DynamicScholarshipAgent:
                     False, "Purdue", 4.0
                 )
 
-                self.add_scholarship(
-                    "Purdue Trustees Scholarship (Continuing)", 8000, 16000,
-                    "$8,000-$16,000", "February 1, 2026", 3.8, 3.9,
-                    "Current Purdue students, outstanding academic achievement",
-                    True, 800, 3, True, "Very High",
-                    "https://www.purdue.edu/financialaid/scholarships/",
-                    "Highly prestigious Purdue scholarship",
-                    True, "Purdue", 6.0
-                )
+        # Purdue Trustees Scholarship (Continuing) - removed (broken link/404 error)
 
             self.add_scholarship(
                 "Engineering Education Foundation Scholarships", 1500, 5000,
@@ -601,7 +564,7 @@ class DynamicScholarshipAgent:
                     "$1,000-$4,000", "March 1, 2026", 3.3, 3.5,
                     "Out-of-state engineering students",
                     False, 0, 0, False, "Medium",
-                    "https://www.purdue.edu/financialaid/scholarships/",
+                    "https://www.purdue.edu/dfa/currentstudents/continuing.html",
                     "Automatic consideration",
                     True, "Purdue", 1.0
                 )
@@ -622,7 +585,7 @@ class DynamicScholarshipAgent:
                 "$2,000/year renewable", "Listed Purdue first choice", 0.0, 3.5,
                 "National Merit Finalists",
                 False, 0, 0, False, "Very High",
-                "https://www.nationalmerit.org",
+                "https://nationalmerit.org/s/1758/interior.aspx?sid=1758&gid=2&pgid=424",
                 "Must list Purdue as first choice",
                 True, "Purdue", 5.0
             )
@@ -769,15 +732,7 @@ class DynamicScholarshipAgent:
                 False, "Diversity", 6.0
             )
 
-            self.add_scholarship(
-                "Thurgood Marshall College Fund STEM Scholarship", 3000, 6200,
-                "$3,000-$6,200", "March 15, 2026", 3.0, 3.25,
-                "Students of color in STEM",
-                True, 600, 2, False, "Medium",
-                "https://tmcf.org/our-scholarships",
-                "Leadership and community service emphasized",
-                False, "Diversity", 4.0
-            )
+        # Thurgood Marshall College Fund STEM Scholarship - removed (broken link/404 error)
 
         # Hispanic/Latino scholarships
         if 'hispanic' in heritage_lower or 'latin' in heritage_lower or 'mexican' in heritage_lower:
@@ -855,37 +810,18 @@ class DynamicScholarshipAgent:
                 "$2,500-$10,000", "February 1, 2026", 3.0, 3.4,
                 "Women pursuing STEM degrees",
                 True, 700, 2, False, "Medium",
-                "https://www.womenstem.org/scholarships",
+                "https://www.swe.org/scholarships/",
                 "Encouraging women in STEM fields",
                 False, "Diversity", 4.5
             )
 
         # LGBTQ+ scholarships
-        self.add_scholarship(
-            "Point Foundation LGBTQ Scholarship", 5000, 30000,
-            "$5,000-$30,000", "January 22, 2026", 3.0, 3.5,
-            "LGBTQ students with demonstrated leadership",
-            True, 800, 2, True, "High",
-            "https://pointfoundation.org/point-apply/",
-            "Largest scholarship for LGBTQ students",
-            False, "Diversity", 5.0
-        )
+        # Point Foundation LGBTQ Scholarship - removed (broken link/404 error)
 
     def add_state_scholarships(self):
         """Add state-specific scholarships"""
 
-        if self.state and self.state != 'Not specified':
-            state_name = self.state
-
-            self.add_scholarship(
-                f"{state_name} State Scholar Award", 1000, 5000,
-                "$1,000-$5,000", "March 31, 2026", 3.0, 3.5,
-                f"Residents of {state_name}",
-                True, 500, 2, False, "Medium",
-                f"https://www.{state_name.lower().replace(' ', '')}.gov/education/scholarships",
-                f"Check with {state_name} Department of Education",
-                True, "State", 3.0
-            )
+        # State scholar awards - removed (dynamic URL generation creates invalid/broken links)
 
     def add_first_gen_scholarships(self):
         """Add first-generation college student scholarships"""
@@ -895,7 +831,7 @@ class DynamicScholarshipAgent:
             "$2,500-$10,000", "February 15, 2026", 2.8, 3.3,
             "First-generation college students",
             True, 700, 2, False, "Medium",
-            "https://www.firstgenerationscholarship.org",
+            "https://www.firstgen.org/",
             "Support for students whose parents didn't attend college",
             False, "National", 4.5
         )
@@ -918,67 +854,25 @@ class DynamicScholarshipAgent:
         disability_lower = self.disability.lower()
 
         # Universal disability scholarships (all types)
-        self.add_scholarship(
-            "National Federation of the Blind Scholarship", 3000, 12000,
-            "$3,000-$12,000", "March 31, 2026", 2.5, 3.0,
-            "Students who are blind or have significant visual impairment",
-            True, 750, 2, False, "Medium",
-            "https://www.nfb.org/scholarships",
-            "Multiple scholarships available for blind students",
-            False, "Disability", 4.5
-        )
+        # National Federation of the Blind Scholarship - removed (broken link/404 error)
 
         self.add_scholarship(
             "Google Lime Scholarship", 10000, 10000,
             "$10,000", "December 11, 2025", 3.0, 3.5,
             "Students with disabilities pursuing CS/Engineering",
             True, 600, 2, False, "High",
-            "https://www.limeconnect.com/opportunities/page/google-lime-scholarship",
+            "https://www.limeconnect.com/programs/page/google-lime-scholarship",
             "For students with visible or invisible disabilities in tech fields",
             False, "Disability", 5.0
         )
 
-        self.add_scholarship(
-            "Microsoft Disability Scholarship", 5000, 5000,
-            "$5,000", "February 15, 2026", 3.0, 3.5,
-            "High school seniors or undergrads with disabilities pursuing STEM",
-            True, 500, 1, False, "Medium",
-            "https://www.microsoft.com/en-us/diversity/programs/scholarships",
-            "For students with disabilities pursuing technology careers",
-            False, "Disability", 4.5
-        )
+        # Microsoft Disability Scholarship - removed (broken link/404 error)
 
-        self.add_scholarship(
-            "Incight Scholarships", 500, 2500,
-            "$500-$2,500", "March 1, 2026", 2.5, 3.0,
-            "Students with documented disabilities",
-            True, 400, 1, False, "Low",
-            "https://incight.org/scholarships",
-            "Multiple awards for students with any documented disability",
-            False, "Disability", 3.5
-        )
+        # Incight Scholarships - removed (broken link/404 error)
 
-        # Autism spectrum specific
-        if 'autism' in disability_lower:
-            self.add_scholarship(
-                "Organization for Autism Research (OAR) Scholarship", 3000, 3000,
-                "$3,000", "April 4, 2026", 2.5, 3.0,
-                "Students on the autism spectrum attending college",
-                True, 500, 2, False, "Medium",
-                "https://researchautism.org/scholarships/",
-                "Specifically for students with ASD diagnosis",
-                False, "Disability", 4.0
-            )
-
-            self.add_scholarship(
-                "Autism Scholarship - ACT Today!", 500, 2000,
-                "$500-$2,000", "Rolling", 2.0, 2.5,
-                "Students with autism pursuing post-secondary education",
-                True, 300, 1, False, "Low",
-                "https://act-today.org/scholarships",
-                "Multiple smaller scholarships throughout the year",
-                False, "Disability", 3.0
-            )
+        # Autism spectrum specific - removed scholarships (broken links/404 errors)
+        # Organization for Autism Research (OAR) Scholarship - removed (broken link/404 error)
+        # Autism Scholarship - ACT Today! - removed (broken link/404 error)
 
         # ADHD and Learning Disabilities
         if any(x in disability_lower for x in ['adhd', 'learning disability', 'dyslexia']):
@@ -1059,15 +953,7 @@ class DynamicScholarshipAgent:
                 False, "Disability", 5.0
             )
 
-            self.add_scholarship(
-                "Sertoma Scholarship for Hard of Hearing", 1000, 1000,
-                "$1,000", "May 1, 2026", 2.5, 3.0,
-                "Students with hearing loss",
-                True, 400, 2, False, "Low",
-                "https://sertoma.org/what-we-do/scholarships/",
-                "For students with clinically significant bilateral hearing loss",
-                False, "Disability", 3.5
-            )
+        # Sertoma Scholarship for Hard of Hearing - removed (broken link/404 error)
 
         # Chronic illness
         if 'chronic' in disability_lower:
@@ -1094,22 +980,14 @@ class DynamicScholarshipAgent:
             True, "Corporate", 5.0
         )
 
-        self.add_scholarship(
-            "Microsoft Tuition Scholarship", 5000, 5000,
-            "$5,000", "February 1, 2026", 3.3, 3.6,
-            "CS/Engineering students",
-            True, 600, 1, False, "High",
-            "https://www.microsoft.com/en-us/diversity/programs/scholarships",
-            "Preference for underrepresented groups",
-            False, "Corporate", 4.0
-        )
+        # Microsoft Tuition Scholarship - removed (broken link/404 error)
 
         self.add_scholarship(
             "Apple Scholars Program", 25000, 25000,
             "$25,000", "April 15, 2026", 3.6, 3.8,
             "Engineering/CS students",
             True, 1000, 3, True, "Very High",
-            "https://www.apple.com/careers/us/apple-scholars.html",
+            "https://www.apple.com/careers/us/students.html",
             "Includes internship and mentorship",
             False, "Corporate", 7.0
         )
@@ -1209,22 +1087,13 @@ class DynamicScholarshipAgent:
                 "$2,000-$10,000", "April 2026", 3.7, 3.8,
                 "Tau Beta Pi members",
                 True, 600, 3, False, "High",
-                "https://www.tbp.org/memb/ScholarInfo.cfm",
+                "https://www.tbp.org/scholarships.cfm",
                 "Must be Tau Beta Pi member; high GPA required",
                 False, "Professional Org", 4.0
             )
 
-        # ACM - Association for Computing Machinery
-        if 'acm' in clubs_lower or 'computing machinery' in clubs_lower:
-            self.add_scholarship(
-                "ACM Student Scholarship", 2000, 5000,
-                "$2,000-$5,000", "March 31, 2026", 3.2, 3.5,
-                "ACM student members in computer science",
-                True, 500, 2, False, "Medium",
-                "https://www.acm.org/",
-                "For students active in ACM chapters",
-                False, "Professional Org", 3.0
-            )
+        # ACM - Association for Computing Machinery - removed scholarship (broken link/404 error)
+        # ACM Student Scholarship - removed (broken link/404 error)
 
         # Robotics Club
         if 'robot' in clubs_lower:
@@ -1252,79 +1121,17 @@ class DynamicScholarshipAgent:
                 False, "High School Activity", 4.0
             )
 
-        # Science Club/Science Olympiad
-        if any(word in clubs_lower for word in ['science club', 'science olympiad', 'science team']):
-            self.add_scholarship(
-                "Science Achievement Scholarship", 1500, 6000,
-                "$1,500-$6,000", "March 1, 2026", 3.3, 3.6,
-                "Students active in science clubs and competitions",
-                True, 600, 2, False, "Medium",
-                "https://www.scholarships.com/",
-                "Demonstrate science competition participation or leadership",
-                False, "High School Activity", 3.5
-            )
+        # Science Club/Science Olympiad - removed generic scholarship
 
-        # Math Team/Math Club
-        if any(word in clubs_lower for word in ['math team', 'math club', 'mathcounts', 'mu alpha theta']):
-            self.add_scholarship(
-                "Mathematics Excellence Scholarship", 2000, 7500,
-                "$2,000-$7,500", "February 28, 2026", 3.4, 3.7,
-                "Students excelling in mathematics competitions",
-                True, 650, 2, False, "Medium",
-                "https://www.scholarships.com/",
-                "Math competition results or club leadership",
-                False, "High School Activity", 4.0
-            )
+        # Math Team/Math Club - removed generic scholarship
 
-        # Debate Team/Forensics/Speech
-        if any(word in clubs_lower for word in ['debate', 'forensics', 'speech team', 'model un']):
-            self.add_scholarship(
-                "Debate & Forensics Scholarship", 1500, 5000,
-                "$1,500-$5,000", "March 15, 2026", 3.2, 3.5,
-                "Students active in debate, forensics, or speech competitions",
-                True, 600, 2, False, "Medium",
-                "https://www.scholarships.com/",
-                "Demonstrate debate/speech competition participation",
-                False, "High School Activity", 3.5
-            )
+        # Debate Team/Forensics/Speech - removed generic scholarship
 
-        # Student Government/Class Officer
-        if any(word in clubs_lower for word in ['student government', 'student council', 'class officer',
-                                                  'class president', 'student body']):
-            self.add_scholarship(
-                "Student Government Leadership Scholarship", 2000, 6000,
-                "$2,000-$6,000", "February 15, 2026", 3.0, 3.4,
-                "Student government members and class officers",
-                True, 600, 2, False, "Medium",
-                "https://www.scholarships.com/",
-                "Document leadership roles and initiatives",
-                False, "High School Activity", 3.5
-            )
+        # Student Government/Class Officer - removed generic scholarship
 
-        # Language Clubs (French, Spanish, etc.)
-        if any(word in clubs_lower for word in ['french club', 'spanish club', 'language club', 'german club',
-                                                  'chinese club', 'latin club', 'foreign language']):
-            self.add_scholarship(
-                "World Language & Cultural Studies Scholarship", 1500, 5000,
-                "$1,500-$5,000", "March 1, 2026", 3.2, 3.5,
-                "Students active in language clubs and cultural activities",
-                True, 500, 2, False, "Medium",
-                "https://www.scholarships.com/",
-                "Demonstrate language proficiency and cultural engagement",
-                False, "High School Activity", 3.0
-            )
+        # Language Clubs (French, Spanish, etc.) - removed generic scholarship
 
-        # Drama/Theater Club
-        if any(word in clubs_lower for word in ['drama', 'theater', 'theatre', 'thespian', 'acting', 'stage crew']):
-            self.add_scholarship(
-                "Theater Arts Scholarship", 1500, 7500,
-                "$1,500-$7,500", "February 1, 2026", 3.0, 3.3,
-                "Students involved in theater and dramatic arts",
-                True, 700, 2, True, "Medium",
-                "https://www.scholarships.com/",
-                "Audition or portfolio of performances may be required",
-                False, "High School Activity", 3.5
-            )
+        # Drama/Theater Club - removed generic scholarship
 
         # Key Club
         if 'key club' in clubs_lower or 'kiwanis' in clubs_lower:
@@ -1338,152 +1145,38 @@ class DynamicScholarshipAgent:
                 False, "High School Activity", 3.0
             )
 
-        # DECA/FBLA (Business Clubs)
-        if 'deca' in clubs_lower or 'fbla' in clubs_lower or 'business club' in clubs_lower:
-            self.add_scholarship(
-                "Business Leadership Scholarship (DECA/FBLA)", 1500, 6000,
-                "$1,500-$6,000", "February 28, 2026", 3.2, 3.5,
-                "DECA or FBLA members pursuing business/entrepreneurship",
-                True, 600, 2, False, "Medium",
-                "https://www.scholarships.com/",
-                "Competition results and leadership roles",
-                False, "High School Activity", 3.5
-            )
+        # DECA/FBLA (Business Clubs) - removed generic scholarship
 
-        # Yearbook/Newspaper/Journalism
-        if any(word in clubs_lower for word in ['yearbook', 'newspaper', 'journalism', 'school paper', 'literary magazine']):
-            self.add_scholarship(
-                "Student Journalism & Media Scholarship", 1500, 5000,
-                "$1,500-$5,000", "March 31, 2026", 3.0, 3.3,
-                "Students in journalism, yearbook, or school publications",
-                True, 600, 2, False, "Medium",
-                "https://www.scholarships.com/",
-                "Portfolio of published work required",
-                False, "High School Activity", 3.0
-            )
+        # Yearbook/Newspaper/Journalism - removed generic scholarship
 
-        # Environmental/Green Club
-        if any(word in clubs_lower for word in ['environmental', 'green club', 'ecology', 'conservation']):
-            self.add_scholarship(
-                "Environmental Leadership Scholarship", 1500, 5000,
-                "$1,500-$5,000", "March 1, 2026", 3.0, 3.3,
-                "Students active in environmental initiatives",
-                True, 600, 2, False, "Medium",
-                "https://www.scholarships.com/",
-                "Document environmental projects and impact",
-                False, "High School Activity", 3.0
-            )
+        # Environmental/Green Club - removed generic scholarship
 
     def add_athletics_scholarships(self):
         """Add scholarships based on athletics participation"""
         athletics_lower = self.athletics.lower()
 
         # NCAA Athletes
-        if any(sport in athletics_lower for sport in ['ncaa', 'varsity', 'division']):
-            self.add_scholarship(
-                "NCAA Division I/II/III Athletic Scholarship", 5000, 30000,
-                "$5,000-$30,000", "Ongoing", 2.5, 3.0,
-                "NCAA student-athletes maintaining eligibility",
-                False, 0, 0, False, "High",
-                "https://www.ncaa.org/sports/",
-                "Contact athletic department for availability",
-                True, "Athletics", 1.0
-            )
+        # any(sport in athletics_lower for sport in ['ncaa', 'varsity', 'division']) - removed scholarship (broken link/404 error)
+        # NCAA Division I/II/III Athletic Scholarship - removed (broken link/404 error)
 
-        # Scholar-Athlete Awards - expanded sports list
-        if any(word in athletics_lower for word in ['football', 'basketball', 'soccer', 'baseball', 'track',
-                                                      'swimming', 'volleyball', 'tennis', 'golf', 'wrestling',
-                                                      'lacrosse', 'cross country', 'softball', 'hockey', 'gymnastics',
-                                                      'diving', 'water polo', 'rowing', 'crew', 'field hockey',
-                                                      'badminton', 'squash', 'fencing', 'bowling', 'archery',
-                                                      'martial arts', 'karate', 'judo', 'taekwondo', 'boxing',
-                                                      'cheerleading', 'dance team', 'equestrian', 'skiing', 'snowboarding']):
-            self.add_scholarship(
-                "Scholar-Athlete Scholarship", 2500, 10000,
-                "$2,500-$10,000", "March 15, 2026", 3.3, 3.5,
-                "Student-athletes with strong academic performance",
-                True, 600, 2, False, "Medium",
-                "https://www.ncaa.org/sports/",
-                "For athletes maintaining high GPA while competing",
-                False, "Athletics", 3.5
-            )
+        # Scholar-Athlete Awards - removed scholarship (broken link/404 error)
+        # Scholar-Athlete Scholarship - removed (broken link/404 error)
 
-        # Specific sport scholarships
-        if any(word in athletics_lower for word in ['cheerleading', 'cheer', 'dance team', 'pom']):
-            self.add_scholarship(
-                "Spirit Squad & Dance Team Scholarship", 1000, 5000,
-                "$1,000-$5,000", "February 28, 2026", 3.0, 3.3,
-                "Cheerleaders and dance team members",
-                True, 500, 2, False, "Medium",
-                "https://www.scholarships.com/",
-                "For competitive cheer and dance team members",
-                False, "Athletics", 3.0
-            )
+        # Specific sport scholarships - removed generic scholarship
 
-        # Intramural/Club Sports
-        if 'intramural' in athletics_lower or 'club' in athletics_lower:
-            self.add_scholarship(
-                "Recreational Sports Leadership Scholarship", 1000, 3000,
-                "$1,000-$3,000", "April 30, 2026", 3.0, 3.3,
-                "Students active in recreational/intramural sports leadership",
-                True, 400, 2, False, "Low",
-                f"https://www.{self.university.lower().replace(' ', '')}.edu/recsports",
-                "Contact campus recreation department",
-                False, "University", 2.0
-            )
+        # Intramural/Club Sports - removed scholarship (dynamic URL generation creates invalid links)
 
     def add_skills_scholarships(self):
         """Add scholarships based on specific skills"""
         skills_lower = self.skills.lower()
 
-        # Programming/Coding Skills
-        if any(skill in skills_lower for skill in ['programming', 'coding', 'python', 'java', 'c++',
-                                                     'javascript', 'software', 'web development']):
-            self.add_scholarship(
-                "Coding Excellence Scholarship", 2500, 10000,
-                "$2,500-$10,000", "February 1, 2026", 3.0, 3.4,
-                "Students with demonstrated coding/programming skills",
-                True, 700, 2, False, "Medium",
-                "https://www.scholarships.com/",
-                "Showcase portfolio or GitHub projects",
-                False, "Skills-Based", 4.0
-            )
+        # Programming/Coding Skills - removed generic scholarship
 
-        # Research Skills
-        if 'research' in skills_lower or 'publication' in skills_lower:
-            self.add_scholarship(
-                "Undergraduate Research Scholarship", 3000, 8000,
-                "$3,000-$8,000", "March 31, 2026", 3.3, 3.6,
-                "Students engaged in undergraduate research",
-                True, 800, 3, True, "Medium",
-                f"https://www.{self.university.lower().replace(' ', '')}.edu/research",
-                "Faculty recommendation highlighting research contributions",
-                False, "University", 5.0
-            )
+        # Research Skills - removed scholarship (dynamic URL generation creates invalid links)
 
-        # Leadership Skills
-        if 'leadership' in skills_lower or 'president' in skills_lower or 'officer' in skills_lower:
-            self.add_scholarship(
-                "Student Leadership Excellence Award", 2000, 7500,
-                "$2,000-$7,500", "February 15, 2026", 3.0, 3.3,
-                "Students with demonstrated leadership in campus organizations",
-                True, 600, 2, False, "Medium",
-                f"https://www.{self.university.lower().replace(' ', '')}.edu/studentlife",
-                "Document leadership roles and impact",
-                False, "University", 3.5
-            )
+        # Leadership Skills - removed scholarship (dynamic URL generation creates invalid links)
 
-        # Community Service/Volunteering
-        if any(word in skills_lower for word in ['volunteer', 'community service', 'service hours', 'outreach']):
-            self.add_scholarship(
-                "Community Service Achievement Scholarship", 1500, 5000,
-                "$1,500-$5,000", "March 1, 2026", 2.8, 3.2,
-                "Students with significant community service involvement",
-                True, 500, 2, False, "Low",
-                "https://www.scholarships.com/",
-                "Document service hours and impact on community",
-                False, "Service-Based", 3.0
-            )
+        # Community Service/Volunteering - removed generic scholarship
 
         # Entrepreneurship
         if 'entrepreneur' in skills_lower or 'startup' in skills_lower or 'business owner' in skills_lower:
@@ -1497,71 +1190,15 @@ class DynamicScholarshipAgent:
                 False, "Skills-Based", 5.0
             )
 
-        # CAD/Design Skills
-        if any(skill in skills_lower for skill in ['cad', 'solidworks', 'autocad', 'design', '3d modeling']):
-            self.add_scholarship(
-                "Engineering Design Excellence Scholarship", 1500, 5000,
-                "$1,500-$5,000", "March 15, 2026", 3.2, 3.5,
-                "Students with strong CAD/design portfolio",
-                True, 600, 2, False, "Medium",
-                "https://www.scholarships.com/",
-                "Submit design portfolio showcasing CAD work",
-                False, "Skills-Based", 3.5
-            )
+        # CAD/Design Skills - removed generic scholarship
 
-        # Music/Performing Arts Skills
-        if any(skill in skills_lower for skill in ['piano', 'guitar', 'violin', 'cello', 'flute', 'clarinet',
-                                                     'saxophone', 'trumpet', 'drums', 'percussion', 'voice', 'singing',
-                                                     'choir', 'orchestra', 'band', 'music', 'musical instrument']):
-            self.add_scholarship(
-                "Music & Performing Arts Scholarship", 2000, 10000,
-                "$2,000-$10,000", "February 1, 2026", 3.0, 3.3,
-                "Students with musical talent and performance experience",
-                True, 700, 2, True, "Medium",
-                "https://www.scholarships.com/",
-                "Audition or portfolio submission required",
-                False, "Skills-Based", 4.0
-            )
+        # Music/Performing Arts Skills - removed generic scholarship
 
-        # Language Skills (Foreign Languages)
-        if any(skill in skills_lower for skill in ['spanish', 'french', 'german', 'chinese', 'japanese', 'korean',
-                                                     'italian', 'portuguese', 'russian', 'arabic', 'hindi', 'latin',
-                                                     'bilingual', 'multilingual', 'foreign language', 'language proficiency']):
-            self.add_scholarship(
-                "Foreign Language Excellence Scholarship", 1500, 5000,
-                "$1,500-$5,000", "March 15, 2026", 3.2, 3.5,
-                "Students proficient in foreign languages",
-                True, 600, 2, False, "Medium",
-                "https://www.scholarships.com/",
-                "Language proficiency test or certification may be required",
-                False, "Skills-Based", 3.5
-            )
+        # Language Skills (Foreign Languages) - removed generic scholarship
 
-        # Visual Arts Skills
-        if any(skill in skills_lower for skill in ['art', 'painting', 'drawing', 'sculpture', 'photography',
-                                                     'graphic design', 'illustration', 'digital art']):
-            self.add_scholarship(
-                "Visual Arts Scholarship", 1500, 7500,
-                "$1,500-$7,500", "February 28, 2026", 3.0, 3.3,
-                "Students with demonstrated artistic talent",
-                True, 650, 2, False, "Medium",
-                "https://www.scholarships.com/",
-                "Portfolio submission required",
-                False, "Skills-Based", 3.5
-            )
+        # Visual Arts Skills - removed generic scholarship
 
-        # Writing/Journalism Skills
-        if any(skill in skills_lower for skill in ['writing', 'journalism', 'creative writing', 'essay', 'poetry',
-                                                     'author', 'editor', 'newspaper', 'literary']):
-            self.add_scholarship(
-                "Writing & Journalism Scholarship", 1500, 5000,
-                "$1,500-$5,000", "March 31, 2026", 3.0, 3.4,
-                "Students with strong writing abilities",
-                True, 700, 2, False, "Medium",
-                "https://www.scholarships.com/",
-                "Writing samples required",
-                False, "Skills-Based", 3.5
-            )
+        # Writing/Journalism Skills - removed generic scholarship
 
     def add_national_competitive_scholarships(self):
         """Add high-value national competitive scholarships"""
@@ -1619,7 +1256,7 @@ class DynamicScholarshipAgent:
                 "$2,000-$10,000", "April 2026", 3.7, 3.8,
                 "Engineering students in top 1/8 (junior)",
                 True, 800, 3, False, "High",
-                "https://www.tbp.org/memb/ScholarInfo.cfm",
+                "https://www.tbp.org/scholarships.cfm",
                 "Must be TBP member or eligible",
                 True, "Professional Org", 5.0
             )
@@ -1639,15 +1276,7 @@ class DynamicScholarshipAgent:
                 )
 
             # NACME - Underrepresented minorities in engineering
-            self.add_scholarship(
-                "NACME Scholarship", 2500, 5000,
-                "$2,500-$5,000", "April 30, 2026", 3.0, 3.3,
-                "Underrepresented minority engineering students",
-                True, 600, 2, False, "Medium",
-                "https://www.nacme.org/scholarships",
-                "National Action Council for Minorities in Engineering",
-                False, "Professional Org", 4.0
-            )
+        # NACME Scholarship - removed (broken link/404 error)
 
             # ASM Materials Education Foundation
             self.add_scholarship(
@@ -1661,15 +1290,7 @@ class DynamicScholarshipAgent:
             )
 
             # AIChE - Chemical engineering students
-            self.add_scholarship(
-                "AIChE Scholarships", 1000, 5000,
-                "$1,000-$5,000", "June 15, 2026", 3.0, 3.3,
-                "Chemical engineering students",
-                True, 500, 2, False, "Medium",
-                "https://www.aiche.org/community/awards/scholarships",
-                "American Institute of Chemical Engineers, multiple awards available",
-                False, "Professional Org", 3.5
-            )
+        # AIChE Scholarships - removed (broken link/404 error)
 
             # SME Education Foundation
             self.add_scholarship(
@@ -1677,7 +1298,7 @@ class DynamicScholarshipAgent:
                 "$1,000-$5,000", "February 1, 2026", 3.0, 3.3,
                 "Manufacturing engineering students",
                 True, 500, 2, False, "Medium",
-                "https://www.sme.org/scholarships/",
+                "https://www.smeef.org/scholarships/",
                 "Society for Manufacturing Engineers, multiple scholarship programs",
                 False, "Professional Org", 3.5
             )
@@ -1686,15 +1307,7 @@ class DynamicScholarshipAgent:
         """Add additional major corporate STEM scholarships"""
 
         # Boeing
-        self.add_scholarship(
-            "Boeing Company Scholarship", 5000, 10000,
-            "$5,000-$10,000", "March 31, 2026", 3.3, 3.5,
-            "Engineering students (Aerospace, Mechanical, Electrical preferred)",
-            True, 700, 2, False, "High",
-            "https://www.boeing.com/careers/college-scholarships",
-            "Internship opportunities available",
-            False, "Corporate", 5.0
-        )
+        # Boeing Company Scholarship - removed (broken link/404 error)
 
         # Intel
         self.add_scholarship(
@@ -1713,7 +1326,7 @@ class DynamicScholarshipAgent:
             "$5,000-$10,000", "February 28, 2026", 3.4, 3.6,
             "Engineering students interested in sustainable energy",
             True, 600, 1, False, "High",
-            "https://www.tesla.com/careers/students",
+            "https://www.tesla.com/careers",
             "Passion for sustainability required",
             False, "Corporate", 4.5
         )
@@ -1730,15 +1343,7 @@ class DynamicScholarshipAgent:
         )
 
         # Northrop Grumman
-        self.add_scholarship(
-            "Northrop Grumman Engineering Scholarship", 10000, 10000,
-            "$10,000", "December 31, 2025", 3.2, 3.5,
-            "Engineering/CS students, US citizenship",
-            True, 700, 2, False, "High",
-            "https://www.northropgrumman.com/careers/scholarships/",
-            "Defense/aerospace industry focus",
-            False, "Corporate", 5.0
-        )
+        # Northrop Grumman Engineering Scholarship - removed (broken link/404 error)
 
         # Lockheed Martin - US citizens only
         if self.residency.lower() != "international":
@@ -1747,7 +1352,7 @@ class DynamicScholarshipAgent:
                 "$10,000", "April 1, 2026", 3.3, 3.6,
                 "Engineering/CS majors, US citizenship required",
                 True, 800, 2, False, "High",
-                "https://www.lockheedmartin.com/en-us/who-we-are/communities/stem-education/scholarships.html",
+                "https://www.lockheedmartin.com/en-us/who-we-are/communities/stem-education.html",
                 "Focus on aerospace and defense-related fields",
                 False, "Corporate", 5.0
             )

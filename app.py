@@ -28,6 +28,21 @@ CORS(app)  # Enable CORS for cross-origin requests from your website
 
 @app.route('/')
 def home():
+    """Serve the main HTML page"""
+    return send_file('index.html')
+
+@app.route('/app.js')
+def serve_js():
+    """Serve JavaScript file"""
+    return send_file('app.js')
+
+@app.route('/styles.css')
+def serve_css():
+    """Serve CSS file"""
+    return send_file('styles.css')
+
+@app.route('/health')
+def health():
     """Health check endpoint"""
     return jsonify({
         'status': 'online',
