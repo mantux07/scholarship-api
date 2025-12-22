@@ -5,6 +5,30 @@
 const API_URL = 'http://127.0.0.1:8083'; // Local development server
 // const API_URL = 'https://scholarship-api-6j7w.onrender.com'; // Production (deploy updated code first)
 
+// Track current search type (scholarships, research, or both)
+let currentSearchType = 'scholarships';
+
+// Tab switching function
+function switchTab(type) {
+    currentSearchType = type;
+
+    // Update active tab styling
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.querySelector(`[data-type="${type}"]`).classList.add('active');
+
+    // Update button text
+    const searchBtn = document.getElementById('searchBtn');
+    if (type === 'scholarships') {
+        searchBtn.innerHTML = '🔍 Search Scholarships';
+    } else if (type === 'research') {
+        searchBtn.innerHTML = '🔬 Search Research Opportunities';
+    } else {
+        searchBtn.innerHTML = '🎯 Search Both';
+    }
+}
+
 // Dynamic year dropdown filtering based on education level
 document.getElementById('education_level').addEventListener('change', function() {
     const educationLevel = this.value;
@@ -62,13 +86,35 @@ document.getElementById('scholarshipForm').addEventListener('submit', async func
     // Show loading, hide results
     document.getElementById('loading').style.display = 'block';
     document.getElementById('results').style.display = 'none';
+    document.getElementById('researchResults').style.display = 'none';
     document.getElementById('searchBtn').disabled = true;
 
     // DEBUG: Log what we're sending
     console.log('🔍 Sending to API:', formData);
+    console.log('Search type:', currentSearchType);
 
     try {
-        // Call API
+        // Call appropriate API based on search type
+        if (currentSearchType === 'scholarships') {
+            await searchScholarships(formData);
+        } else if (currentSearchType === 'research') {
+            await searchResearch(formData);
+        } else if (currentSearchType === 'both') {
+            await Promise.all([searchScholarships(formData), searchResearch(formData)]);
+        }
+
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Failed to search. Please try again or check your internet connection.');
+    } finally {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('searchBtn').disabled = false;
+    }
+});
+
+// Search scholarships function
+async function searchScholarships(formData) {
+    try {
         const response = await fetch(`${API_URL}/api/search`, {
             method: 'POST',
             headers: {
@@ -78,13 +124,11 @@ document.getElementById('scholarshipForm').addEventListener('submit', async func
         });
 
         if (!response.ok) {
-            throw new Error('Search failed');
+            throw new Error('Scholarship search failed');
         }
 
         const data = await response.json();
-
-        // DEBUG: Log what we received
-        console.log('✅ Received from API:', data.profile);
+        console.log('✅ Received scholarships:', data.profile);
 
         if (data.success) {
             displayResults(data, formData);
@@ -93,13 +137,38 @@ document.getElementById('scholarshipForm').addEventListener('submit', async func
         }
 
     } catch (error) {
-        console.error('Error:', error);
-        alert('Failed to search scholarships. Please try again or check your internet connection.');
-    } finally {
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('searchBtn').disabled = false;
+        throw error;
     }
-});
+}
+
+// Search research opportunities function
+async function searchResearch(formData) {
+    try {
+        const response = await fetch(`${API_URL}/api/research`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        });
+
+        if (!response.ok) {
+            throw new Error('Research search failed');
+        }
+
+        const data = await response.json();
+        console.log('✅ Received research opportunities:', data.profile);
+
+        if (data.success) {
+            displayResearchResults(data);
+        } else {
+            alert('Error: ' + data.error);
+        }
+
+    } catch (error) {
+        throw error;
+    }
+}
 
 // Display results
 function displayResults(data, formData) {
@@ -365,4 +434,118 @@ function getDaysRemainingText(scholarship) {
         return `(${days} days)`;
     }
     return '';
+}
+
+// Display research opportunity results
+function displayResearchResults(data) {
+    const resultsSection = document.getElementById('researchResults');
+    const profileSummary = document.getElementById('researchProfileSummary');
+    const statsGrid = document.getElementById('researchStatsGrid');
+    const opportunitiesList = document.getElementById('opportunitiesList');
+
+    // Profile Summary
+    profileSummary.innerHTML = `
+        <h3>Your Profile</h3>
+        <p><strong>🎓 University:</strong> ${data.profile.university}</p>
+        <p><strong>📚 Major:</strong> ${data.profile.major} (${data.profile.year})</p>
+        <p><strong>📊 GPA:</strong> ${data.profile.gpa}</p>
+        <p><strong>🔬 Discipline:</strong> ${data.profile.discipline}</p>
+    `;
+
+    // Statistics
+    statsGrid.innerHTML = `
+        <div class="stat-card">
+            <h3>${data.stats.total_opportunities}</h3>
+            <p>Total Opportunities</p>
+        </div>
+        <div class="stat-card">
+            <h3>${data.stats.paid_opportunities}</h3>
+            <p>Paid Programs</p>
+        </div>
+        <div class="stat-card">
+            <h3>${data.stats.average_stipend}</h3>
+            <p>Avg. Stipend</p>
+        </div>
+        <div class="stat-card">
+            <h3>${data.stats.with_housing}</h3>
+            <p>With Housing</p>
+        </div>
+    `;
+
+    // Opportunities List
+    opportunitiesList.innerHTML = '<h2>🎯 Your Research Matches</h2>';
+
+    data.opportunities.forEach(opp => {
+        const priorityClass = opp.priority_score >= 80 ? 'priority-high' :
+                            opp.priority_score >= 65 ? 'priority-medium' : '';
+
+        const competitivenessClass = {
+            'Low': 'badge-low',
+            'Medium': 'badge-medium',
+            'High': 'badge-high',
+            'Very High': 'badge-very-high'
+        }[opp.competitiveness] || 'badge-medium';
+
+        const card = document.createElement('div');
+        card.className = `scholarship-card ${priorityClass}`;
+        card.innerHTML = `
+            <div class="scholarship-header">
+                <div class="scholarship-title">${opp.name}</div>
+                <div class="priority-badge">Priority: ${opp.priority_score}/100</div>
+            </div>
+
+            <div class="research-meta">
+                <span class="research-org">🏛️ ${opp.organization}</span>
+                <span class="research-category">${opp.category}</span>
+            </div>
+
+            <div class="scholarship-details">
+                <div class="detail-item">
+                    <span class="detail-label">Compensation</span>
+                    <span class="detail-value">${opp.stipend_display}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Duration</span>
+                    <span class="detail-value">${opp.duration}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Location</span>
+                    <span class="detail-value">${opp.location}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Deadline</span>
+                    <span class="detail-value">${opp.deadline}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">GPA Requirement</span>
+                    <span class="detail-value">${opp.gpa_min}+ / Preferred: ${opp.gpa_preferred}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Competition Level</span>
+                    <span class="badge ${competitivenessClass}">${opp.competitiveness}</span>
+                </div>
+            </div>
+
+            <div class="research-benefits">
+                ${opp.housing_provided ? '<span class="benefit-badge">🏠 Housing Provided</span>' : ''}
+                ${opp.travel_covered ? '<span class="benefit-badge">✈️ Travel Covered</span>' : ''}
+            </div>
+
+            <div class="research-details">
+                <p><strong>🔬 Research Area:</strong> ${opp.research_area}</p>
+                <p><strong>📝 Description:</strong> ${opp.description}</p>
+                <p><strong>💡 Application Tips:</strong> ${opp.application_tips}</p>
+            </div>
+
+            <a href="${opp.application_url}" target="_blank" class="apply-btn">
+                🔗 Apply Now
+            </a>
+        `;
+
+        opportunitiesList.appendChild(card);
+    });
+
+    // Show results, scroll to them
+    resultsSection.style.display = 'block';
+    resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }

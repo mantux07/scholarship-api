@@ -11,9 +11,21 @@
 <body>
     <div class="container">
         <header>
-            <h1>🎓 Scholarship Research Tool</h1>
-            <p class="subtitle">Discover personalized scholarship opportunities tailored to YOUR profile</p>
+            <h1>🎓 Academic Opportunities Portal</h1>
+            <p class="subtitle">Discover scholarships and research opportunities tailored to YOUR profile</p>
         </header>
+
+        <div class="tab-navigation">
+            <button type="button" class="tab-btn active" data-type="scholarships" onclick="switchTab('scholarships')">
+                💰 Scholarships
+            </button>
+            <button type="button" class="tab-btn" data-type="research" onclick="switchTab('research')">
+                🔬 Research Opportunities
+            </button>
+            <button type="button" class="tab-btn" data-type="both" onclick="switchTab('both')">
+                🎯 Both
+            </button>
+        </div>
 
         <div class="form-card">
             <form id="scholarshipForm">
@@ -323,7 +335,7 @@
 
                 <div class="button-group">
                     <button type="submit" class="btn btn-primary" id="searchBtn">
-                        🔍 Search Scholarships
+                        🔍 Search Opportunities
                     </button>
                     <button type="reset" class="btn btn-secondary">
                         Clear Form
@@ -351,6 +363,17 @@
             </div>
 
             <div class="scholarships-list" id="scholarshipsList"></div>
+        </div>
+
+        <div id="researchResults" class="results-section" style="display: none;">
+            <div class="results-header">
+                <h2>🔬 Your Research Opportunity Matches</h2>
+                <div id="researchProfileSummary" class="profile-summary"></div>
+            </div>
+
+            <div class="stats-grid" id="researchStatsGrid"></div>
+
+            <div class="opportunities-list" id="opportunitiesList"></div>
         </div>
     </div>
 

@@ -50,6 +50,40 @@ header h1 {
     opacity: 0.95;
 }
 
+/* Tab Navigation */
+.tab-navigation {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.tab-btn {
+    padding: 15px 30px;
+    background: white;
+    border: 3px solid rgba(255,255,255,0.3);
+    border-radius: 10px;
+    color: var(--text-dark);
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.tab-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+    border-color: rgba(255,255,255,0.5);
+}
+
+.tab-btn.active {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: white;
+    border-color: white;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+}
+
 .form-card {
     background: white;
     border-radius: 15px;
@@ -414,6 +448,65 @@ footer a {
     text-decoration: underline;
 }
 
+/* Research Opportunity Specific Styles */
+.research-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.research-org {
+    font-weight: 600;
+    color: var(--primary-color);
+    font-size: 1em;
+}
+
+.research-category {
+    background: var(--bg-light);
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 0.9em;
+    color: var(--text-dark);
+    font-weight: 600;
+}
+
+.research-benefits {
+    display: flex;
+    gap: 10px;
+    margin: 15px 0;
+    flex-wrap: wrap;
+}
+
+.benefit-badge {
+    background: linear-gradient(135deg, var(--success-color) 0%, #38a169 100%);
+    color: white;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 0.9em;
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.research-details {
+    background: var(--bg-light);
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 15px;
+}
+
+.research-details p {
+    margin: 8px 0;
+    color: var(--text-dark);
+    line-height: 1.6;
+}
+
+.opportunities-list {
+    margin-top: 30px;
+}
+
 /* Popular Chips */
 .popular-chips {
     margin-bottom: 1rem;
@@ -453,6 +546,17 @@ footer a {
     button, .chip {
         min-height: 44px;
         min-width: 44px;
+    }
+
+    /* Tab navigation on mobile */
+    .tab-navigation {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .tab-btn {
+        width: 100%;
+        padding: 12px 20px;
     }
 
     .form-card {
