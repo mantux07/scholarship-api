@@ -2,8 +2,8 @@
 // Note: All Code owned by Tim
 
 // API Configuration - UPDATE THIS URL after deploying backend
-const API_URL = 'http://127.0.0.1:8083'; // Local development server
-// const API_URL = 'https://scholarship-api-6j7w.onrender.com'; // Production (deploy updated code first)
+// const API_URL = 'http://127.0.0.1:8083'; // Local development server (for testing)
+const API_URL = 'https://scholarship-api-6j7w.onrender.com'; // Production
 
 // Track current search type (scholarships, research, or both)
 let currentSearchType = 'scholarships';
