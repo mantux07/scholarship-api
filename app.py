@@ -16,8 +16,9 @@ from datetime import datetime
 # Add parent directory to path to import our modules
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Import dynamic scholarship agent
+# Import dynamic scholarship agent and research opportunity agent
 from scholarship_research_agent_dynamic import DynamicScholarshipAgent
+from research_opportunity_agent import ResearchOpportunityAgent
 from scholarship_output_modules import (
     ExcelExporter, PDFExporter, HTMLDashboard,
     CalendarGenerator, ApplicationTracker
@@ -150,6 +151,81 @@ def search_scholarships():
             'stats': stats,
             'scholarships': scholarships_json,
             'total': len(scholarships_json)
+        })
+
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/api/research', methods=['POST'])
+def search_research():
+    """Search research opportunities based on student profile"""
+    try:
+        # Get student profile from request
+        data = request.json
+
+        # Extract parameters
+        student_profile = {
+            'gpa': float(data.get('gpa', 3.0)),
+            'university': data.get('university', 'University'),
+            'major': data.get('major', 'Computer Science'),
+            'year': data.get('year', 'Sophomore'),
+            'discipline': data.get('discipline', 'STEM'),
+            'state': data.get('state', '')
+        }
+
+        # Initialize research agent
+        agent = ResearchOpportunityAgent(student_profile)
+        opportunities = agent.research_opportunities()
+
+        # Convert to JSON
+        opportunities_json = []
+        for opp in opportunities:
+            opportunities_json.append({
+                'name': opp.name,
+                'organization': opp.organization,
+                'research_area': opp.research_area,
+                'location': opp.location,
+                'compensation_type': opp.compensation_type,
+                'stipend_amount': opp.stipend_amount,
+                'stipend_display': f"${opp.stipend_amount:,}" if opp.stipend_amount > 0 else opp.compensation_type,
+                'duration': opp.duration,
+                'deadline': opp.deadline,
+                'gpa_min': opp.gpa_min,
+                'gpa_preferred': opp.gpa_preferred,
+                'eligible_years': opp.eligible_years,
+                'majors': opp.majors,
+                'description': opp.description,
+                'application_url': opp.application_url,
+                'application_tips': opp.application_tips,
+                'housing_provided': opp.housing_provided,
+                'travel_covered': opp.travel_covered,
+                'category': opp.category,
+                'competitiveness': opp.competitiveness,
+                'priority_score': opp.priority_score
+            })
+
+        # Generate statistics
+        total_paid = sum(1 for o in opportunities if o.stipend_amount > 0)
+        avg_stipend = sum(o.stipend_amount for o in opportunities if o.stipend_amount > 0) / max(total_paid, 1)
+        with_housing = sum(1 for o in opportunities if o.housing_provided)
+
+        stats = {
+            'total_opportunities': len(opportunities),
+            'paid_opportunities': total_paid,
+            'average_stipend': f"${avg_stipend:,.0f}",
+            'with_housing': with_housing,
+            'categories': list(set(o.category for o in opportunities))
+        }
+
+        return jsonify({
+            'success': True,
+            'profile': student_profile,
+            'stats': stats,
+            'opportunities': opportunities_json,
+            'total': len(opportunities_json)
         })
 
     except Exception as e:
