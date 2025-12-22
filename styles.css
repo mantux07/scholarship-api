@@ -69,12 +69,33 @@ header h1 {
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+}
+
+.tab-icon {
+    font-size: 1.3em;
+}
+
+.tab-text {
+    flex: 1;
+}
+
+.tab-check {
+    font-size: 1.2em;
+    font-weight: bold;
+    opacity: 0;
+    transform: scale(0);
+    transition: all 0.3s ease;
 }
 
 .tab-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(0,0,0,0.2);
     border-color: rgba(255,255,255,0.5);
+    background: rgba(255,255,255,0.95);
 }
 
 .tab-btn.active {
@@ -82,6 +103,16 @@ header h1 {
     color: white;
     border-color: white;
     box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    transform: translateY(-2px);
+}
+
+.tab-btn.active .tab-check {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.tab-btn.active:hover {
+    transform: translateY(-2px);
 }
 
 .form-card {
@@ -550,13 +581,24 @@ footer a {
 
     /* Tab navigation on mobile */
     .tab-navigation {
-        flex-direction: column;
+        flex-direction: row;
+        flex-wrap: wrap;
         gap: 10px;
     }
 
     .tab-btn {
-        width: 100%;
-        padding: 12px 20px;
+        flex: 1;
+        min-width: 120px;
+        padding: 12px 15px;
+        font-size: 0.95em;
+    }
+
+    .tab-icon {
+        font-size: 1.2em;
+    }
+
+    .tab-text {
+        font-size: 0.9em;
     }
 
     .form-card {

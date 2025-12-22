@@ -10,23 +10,37 @@ let currentSearchType = 'scholarships';
 
 // Tab switching function
 function switchTab(type) {
+    console.log('🔄 Switching to tab:', type);
     currentSearchType = type;
 
     // Update active tab styling
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.classList.remove('active');
+        console.log('Removed active from:', btn.getAttribute('data-type'));
     });
-    document.querySelector(`[data-type="${type}"]`).classList.add('active');
 
-    // Update button text
-    const searchBtn = document.getElementById('searchBtn');
-    if (type === 'scholarships') {
-        searchBtn.innerHTML = '🔍 Search Scholarships';
-    } else if (type === 'research') {
-        searchBtn.innerHTML = '🔬 Search Research Opportunities';
-    } else {
-        searchBtn.innerHTML = '🎯 Search Both';
+    const activeTab = document.querySelector(`[data-type="${type}"]`);
+    if (activeTab) {
+        activeTab.classList.add('active');
+        console.log('✓ Added active to:', type);
     }
+
+    // Update button text with animation
+    const searchBtn = document.getElementById('searchBtn');
+    searchBtn.style.opacity = '0.5';
+
+    setTimeout(() => {
+        if (type === 'scholarships') {
+            searchBtn.innerHTML = '🔍 Search Scholarships';
+        } else if (type === 'research') {
+            searchBtn.innerHTML = '🔬 Search Research Opportunities';
+        } else {
+            searchBtn.innerHTML = '🎯 Search Both';
+        }
+        searchBtn.style.opacity = '1';
+    }, 150);
+
+    console.log('Current search type:', currentSearchType);
 }
 
 // Dynamic year dropdown filtering based on education level
