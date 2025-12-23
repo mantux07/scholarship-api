@@ -897,13 +897,13 @@ class DynamicScholarshipAgent:
             )
 
             self.add_scholarship(
-                "Baltic American Freedom Foundation Scholarship", 5000, 15000,
-                "$5,000-$15,000", "January 2026 (rolling)", 3.0, 3.5,
-                "Students from Baltic states (Estonia, Latvia, Lithuania) or of Baltic heritage",
+                "Baltic American Freedom Foundation - Professional Internship", 5000, 30000,
+                "Up to $30,000", "Rolling applications", 3.0, 3.5,
+                "University students and recent graduates from Estonia, Latvia, or Lithuania",
                 True, 800, 3, True, "Medium",
-                "https://www.balticamericanfreedomfoundation.org/",
-                "Leadership Academy, Professional Internship, and Research programs available",
-                False, "Heritage", 5.0
+                "https://www.balticamericanfreedomfoundation.org/programs/professional-internship-program",
+                "Paid internships at U.S. companies for Baltic students - covers travel, living expenses",
+                False, "Heritage/Internship", 5.5
             )
 
             self.add_scholarship(
