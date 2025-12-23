@@ -940,13 +940,13 @@ class DynamicScholarshipAgent:
         """Add first-generation college student scholarships"""
 
         self.add_scholarship(
-            "First Generation Scholarship Program", 2500, 10000,
-            "$2,500-$10,000", "February 15, 2026", 2.8, 3.3,
-            "First-generation college students",
+            "First Gen Fellowship", 1000, 1000,
+            "$1,000", "August 29, 2026", 2.8, 3.3,
+            "First-generation undergraduate or graduate students (neither parent holds post-secondary degree)",
             True, 700, 2, False, "Medium",
-            "https://www.firstgen.org/",
-            "Support for students whose parents didn't attend college",
-            False, "National", 4.5
+            "https://www.firstgen.org/apply",
+            "Financial hardship relief for education expenses - U.S. citizens/permanent residents",
+            False, "National/First-Gen", 4.5
         )
 
     def add_military_scholarships(self):
@@ -1107,15 +1107,8 @@ class DynamicScholarshipAgent:
 
         # Microsoft Tuition Scholarship - removed (broken link/404 error)
 
-        self.add_scholarship(
-            "Apple Scholars Program", 25000, 25000,
-            "$25,000", "April 15, 2026", 3.6, 3.8,
-            "Engineering/CS students",
-            True, 1000, 3, True, "Very High",
-            "https://www.apple.com/careers/us/students.html",
-            "Includes internship and mentorship",
-            False, "Corporate", 7.0
-        )
+        # Apple Scholars Program - REMOVED (Discontinued for undergraduates as of 2022)
+        # Current Apple programs are PhD-only (Apple Scholars in AI/ML)
 
     def add_club_scholarships(self):
         """Add scholarships based on club/organization memberships"""
