@@ -682,17 +682,7 @@ class DynamicScholarshipAgent:
                 False, "Diversity/Tech", 5.0
             )
 
-        # Palantir Women in Technology Scholarship
-        if self.gender.lower() in ['female', 'woman'] and 'computer' in self.major.lower():
-            self.add_scholarship(
-                "Palantir Women in Technology Scholarship", 7000, 7000,
-                "$7,000", "April 1, 2026", 3.0, 3.5,
-                "Women studying CS/Engineering with strong academic record",
-                True, 500, 2, False, "High",
-                "https://www.palantir.com/careers/students/scholarship/wit-north-america/",
-                "Includes mentorship and networking opportunities",
-                False, "Corporate", 5.5
-            )
+        # Palantir Women in Technology Scholarship - REMOVED (URL broken, redirects to 404)
 
         # ASME Scholarship
         if 'mechanical' in self.major.lower() or 'asme' in self.clubs.lower():
@@ -1455,27 +1445,9 @@ class DynamicScholarshipAgent:
             False, "Corporate", 5.0
         )
 
-        # Tesla
-        self.add_scholarship(
-            "Tesla Engineering Scholarship", 5000, 10000,
-            "$5,000-$10,000", "February 28, 2026", 3.4, 3.6,
-            "Engineering students interested in sustainable energy",
-            True, 600, 1, False, "High",
-            "https://www.tesla.com/careers",
-            "Passion for sustainability required",
-            False, "Corporate", 4.5
-        )
+        # Tesla Engineering Scholarship - REMOVED (URL gives 403 error, not a valid scholarship page)
 
-        # Raytheon
-        self.add_scholarship(
-            "Raytheon Technologies Engineering Scholarship", 5000, 10000,
-            "$5,000-$10,000", "March 15, 2026", 3.2, 3.5,
-            "Engineering majors, Aerospace/Mechanical/Electrical",
-            True, 700, 2, False, "High",
-            "https://www.rtx.com/our-company/corporate-responsibility/scholarship-programs",
-            "Defense/aerospace focus",
-            False, "Corporate", 4.5
-        )
+        # Raytheon Technologies - REMOVED (URL redirects to 404)
 
         # Northrop Grumman
         # Northrop Grumman Engineering Scholarship - removed (broken link/404 error)
