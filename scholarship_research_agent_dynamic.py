@@ -898,11 +898,11 @@ class DynamicScholarshipAgent:
 
             self.add_scholarship(
                 "Baltic American Freedom Foundation Scholarship", 5000, 15000,
-                "$5,000-$15,000", "February 28, 2026", 3.0, 3.5,
-                "Students from Baltic states or of Baltic heritage",
+                "$5,000-$15,000", "January 2026 (rolling)", 3.0, 3.5,
+                "Students from Baltic states (Estonia, Latvia, Lithuania) or of Baltic heritage",
                 True, 800, 3, True, "Medium",
-                "https://www.balticfreedom.org/scholarships",
-                "Study abroad and exchange programs available",
+                "https://www.balticamericanfreedomfoundation.org/",
+                "Leadership Academy, Professional Internship, and Research programs available",
                 False, "Heritage", 5.0
             )
 
