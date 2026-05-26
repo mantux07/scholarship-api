@@ -1,0 +1,25 @@
+# Vercel
+.vercel/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Secrets / env
+.env
+.env.local
+.env.*.local
+
+# Local build / temp
+*.log
