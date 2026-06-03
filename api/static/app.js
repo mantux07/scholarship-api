@@ -126,6 +126,7 @@ document.getElementById('scholarshipForm').addEventListener('submit', async func
 async function searchScholarships(formData) {
     const response = await fetch(`${API_URL}/api/search`, {
         method: 'POST',
+        cache: 'no-store',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
     });
@@ -141,6 +142,7 @@ async function searchScholarships(formData) {
 async function searchResearch(formData) {
     const response = await fetch(`${API_URL}/api/research`, {
         method: 'POST',
+        cache: 'no-store',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
     });
@@ -160,6 +162,8 @@ function displayResults(data, formData) {
     const statsGrid = document.getElementById('statsGrid');
     const scholarshipsList = document.getElementById('scholarshipsList');
     const downloadButtons = document.getElementById('downloadButtons');
+    const oldSourceNote = document.getElementById('sourceBreakdownNote');
+    if (oldSourceNote) oldSourceNote.remove();
 
     // Profile Summary
     profileSummary.innerHTML = `
@@ -204,6 +208,7 @@ function displayResults(data, formData) {
     `;
     if (sourceBreakdown) {
         const note = document.createElement('p');
+        note.id = 'sourceBreakdownNote';
         note.style.cssText = 'color:#718096;font-size:0.85em;text-align:center;margin-bottom:16px';
         note.textContent = `Sources: ${sourceBreakdown}`;
         statsGrid.after(note);
@@ -334,6 +339,7 @@ async function downloadFile(format, formData) {
     try {
         const response = await fetch(`${API_URL}/api/download/${format}`, {
             method: 'POST',
+            cache: 'no-store',
             headers: {
                 'Content-Type': 'application/json',
             },
@@ -428,6 +434,7 @@ async function subscribeAlerts() {
 // Add chip value to field
 function addToField(fieldId, value, buttonElement) {
     const field = document.getElementById(fieldId);
+    if (!field) return;
     const currentValue = field.value.trim();
 
     if (currentValue === '' || currentValue === 'Not specified') {
@@ -536,6 +543,7 @@ async function downloadResearchFile(format, formData) {
     try {
         const response = await fetch(`${API_URL}/api/research/download/${format}`, {
             method: 'POST',
+            cache: 'no-store',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(formData)
         });

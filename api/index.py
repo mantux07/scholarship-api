@@ -36,6 +36,14 @@ CORS(app)
 STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static')
 
 
+@app.after_request
+def add_no_store_headers(response):
+    """Search results depend on the current form payload; don't cache API responses."""
+    if request.path.startswith('/api/'):
+        response.headers['Cache-Control'] = 'no-store, max-age=0'
+    return response
+
+
 # ── Static file serving ────────────────────────────────────────────────────────
 
 @app.route('/')
@@ -49,24 +57,47 @@ def serve_static(filename):
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
+def _clean_text(data: dict, key: str, default: str = '') -> str:
+    value = data.get(key, default)
+    if value is None:
+        return default
+    return str(value).strip() or default
+
+
+def _coerce_float(value, default: float) -> float:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def _profile_validation_error(profile: dict) -> str:
+    if not profile.get('major'):
+        return 'Major is required.'
+    if not profile.get('year'):
+        return 'Year in school is required.'
+    return ''
+
+
 def _build_profile(data: dict) -> dict:
+    data = data or {}
     return {
-        'gpa': float(data.get('gpa', 3.5)),
-        'university': data.get('university', 'University'),
-        'major': data.get('major', 'Engineering'),
-        'year': data.get('year', 'Sophomore'),
-        'heritage': data.get('heritage', '') or 'Not specified',
-        'gender': data.get('gender', '') or 'Not specified',
-        'state': data.get('state', '') or 'Not specified',
-        'residency': data.get('residency', '') or 'Not specified',
+        'gpa': _coerce_float(data.get('gpa'), 3.5),
+        'university': _clean_text(data, 'university', 'University'),
+        'major': _clean_text(data, 'major'),
+        'year': _clean_text(data, 'year', 'Sophomore'),
+        'heritage': _clean_text(data, 'heritage', 'Not specified'),
+        'gender': _clean_text(data, 'gender', 'Not specified'),
+        'state': _clean_text(data, 'state', 'Not specified'),
+        'residency': _clean_text(data, 'residency', 'Not specified'),
         'first_gen': data.get('first_gen', False),
         'military': data.get('military', False),
         'research': data.get('research', False),
-        'discipline': data.get('discipline', '') or 'General',
-        'skills': data.get('skills', '') or 'Not specified',
-        'clubs': data.get('clubs', '') or 'Not specified',
-        'athletics': data.get('athletics', '') or 'Not specified',
-        'disability': data.get('disability', '') or 'Not specified',
+        'discipline': _clean_text(data, 'discipline'),
+        'skills': _clean_text(data, 'skills', 'Not specified'),
+        'clubs': _clean_text(data, 'clubs', 'Not specified'),
+        'athletics': _clean_text(data, 'athletics', 'Not specified'),
+        'disability': _clean_text(data, 'disability', 'Not specified'),
         'email': 'Not specified',
     }
 
@@ -136,6 +167,9 @@ def search_scholarships():
     try:
         data = request.json
         student_profile = _build_profile(data)
+        validation_error = _profile_validation_error(student_profile)
+        if validation_error:
+            return jsonify({'success': False, 'error': validation_error}), 400
         sort_by = data.get('sort', 'priority')
         gpa = student_profile['gpa']
 
@@ -208,6 +242,9 @@ def download_file(format_type):
     try:
         data = request.json
         student_profile = _build_profile(data)
+        validation_error = _profile_validation_error(student_profile)
+        if validation_error:
+            return jsonify({'success': False, 'error': validation_error}), 400
         sort_by = data.get('sort', 'priority')
         gpa = student_profile['gpa']
         state = student_profile.get('state', '')
@@ -292,22 +329,23 @@ def download_file(format_type):
 
 def _build_research_profile(data: dict) -> dict:
     """Profile shape consumed by ResearchOpportunityAgent."""
+    data = data or {}
     return {
-        'gpa': float(data.get('gpa', 3.0)),
-        'university': data.get('university', 'University'),
-        'major': data.get('major', 'Computer Science'),
-        'year': data.get('year', 'Sophomore'),
-        'discipline': data.get('discipline', 'STEM'),
-        'state': data.get('state', ''),
-        'heritage': data.get('heritage', ''),
-        'gender': data.get('gender', ''),
-        'residency': data.get('residency', ''),
+        'gpa': _coerce_float(data.get('gpa'), 3.0),
+        'university': _clean_text(data, 'university', 'University'),
+        'major': _clean_text(data, 'major'),
+        'year': _clean_text(data, 'year', 'Sophomore'),
+        'discipline': _clean_text(data, 'discipline'),
+        'state': _clean_text(data, 'state'),
+        'heritage': _clean_text(data, 'heritage'),
+        'gender': _clean_text(data, 'gender'),
+        'residency': _clean_text(data, 'residency'),
         'first_gen': bool(data.get('first_gen', False)),
         'military': bool(data.get('military', False)),
-        'disability': data.get('disability', ''),
-        'skills': data.get('skills', ''),
-        'clubs': data.get('clubs', ''),
-        'athletics': data.get('athletics', ''),
+        'disability': _clean_text(data, 'disability'),
+        'skills': _clean_text(data, 'skills'),
+        'clubs': _clean_text(data, 'clubs'),
+        'athletics': _clean_text(data, 'athletics'),
     }
 
 
@@ -343,6 +381,9 @@ def search_research():
     try:
         data = request.json or {}
         student_profile = _build_research_profile(data)
+        validation_error = _profile_validation_error(student_profile)
+        if validation_error:
+            return jsonify({'success': False, 'error': validation_error}), 400
 
         agent = ResearchOpportunityAgent(student_profile)
         opportunities = agent.research_opportunities()
@@ -546,6 +587,9 @@ def download_research(format_type):
     try:
         data = request.json or {}
         student_profile = _build_research_profile(data)
+        validation_error = _profile_validation_error(student_profile)
+        if validation_error:
+            return jsonify({'success': False, 'error': validation_error}), 400
 
         agent = ResearchOpportunityAgent(student_profile)
         opportunities = agent.research_opportunities()

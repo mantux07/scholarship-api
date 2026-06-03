@@ -51,7 +51,7 @@ class DynamicScholarshipAgent:
 
         # Extract profile details
         self.university = self.student_profile.get('university', 'University')
-        self.major = self.student_profile.get('major', 'Engineering')
+        self.major = self.student_profile.get('major', '')
         self.year = self.student_profile.get('year', 'Sophomore')
         self.heritage = self.student_profile.get('heritage', 'Not specified')
         self.gender = self.student_profile.get('gender', 'Not specified')

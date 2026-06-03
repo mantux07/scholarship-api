@@ -202,8 +202,8 @@ class PDFExporter:
 
         # Get student profile info
         profile = student_profile or {}
-        university = profile.get('university', 'Purdue University')
-        major = profile.get('major', 'Engineering')
+        university = profile.get('university') or 'Selected University'
+        major = profile.get('major') or 'Selected Major'
         year = profile.get('year', 'Sophomore')
         heritage = profile.get('heritage', 'Not specified')
         gender = profile.get('gender', 'Not specified')
@@ -273,8 +273,8 @@ class HTMLDashboard:
 
         # Get student profile info
         profile = student_profile or {}
-        university = profile.get('university', 'Purdue University')
-        major = profile.get('major', 'Engineering')
+        university = profile.get('university') or 'Selected University'
+        major = profile.get('major') or 'Selected Major'
         year = profile.get('year', 'Sophomore')
         heritage = profile.get('heritage', 'Not specified')
         gender = profile.get('gender', 'Not specified')
@@ -287,7 +287,7 @@ class HTMLDashboard:
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Purdue Engineering Scholarships - Dashboard</title>
+    <title>{major} Scholarships - Dashboard</title>
     <style>
         * {{ margin: 0; padding: 0; box-sizing: border-box; }}
         body {{
@@ -638,7 +638,7 @@ CALSCALE:GREGORIAN
 METHOD:PUBLISH
 X-WR-CALNAME:Scholarship Deadlines
 X-WR-TIMEZONE:America/New_York
-X-WR-CALDESC:Deadlines for Purdue Engineering Scholarships
+X-WR-CALDESC:Deadlines for matched scholarship opportunities
 """
 
         for s in scholarships:
