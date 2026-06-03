@@ -170,7 +170,13 @@ class ResearchOpportunityAgent:
         self.add_tech_company_research()
         self.add_international_programs()
 
-        matched = [o for o in self.opportunities if o.matches_profile(self.student_profile)]
+        # Merit-based only: exclude identity/need-restricted programs (e.g.
+        # McNair, LSAMP, NIH UGSP). These are gated on first-gen / low-income /
+        # URM status by design, and the profile collects no such financial data,
+        # so they can't be matched reliably. target_identities is set precisely
+        # on those programs and empty on every merit-open one.
+        merit_only = [o for o in self.opportunities if not o.target_identities]
+        matched = [o for o in merit_only if o.matches_profile(self.student_profile)]
         for opp in matched:
             opp.calculate_priority(self.student_profile)
         matched.sort(key=lambda x: x.priority_score, reverse=True)
