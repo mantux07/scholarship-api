@@ -1039,7 +1039,15 @@ class DynamicScholarshipAgent:
             )
 
     def add_corporate_scholarships(self):
-        """Add major corporate scholarships"""
+        """Add major corporate scholarships (CS/Engineering specific)"""
+
+        # Amazon, Microsoft, and Apple all target CS/Engineering students, so
+        # only surface them for tech-related majors. Mirrors the keyword set
+        # used in add_major_scholarships() so gating stays consistent.
+        major_lower = self.major.lower()
+        if not any(word in major_lower for word in
+                   ['engineering', 'computer', 'science', 'technology', 'math']):
+            return
 
         self.add_scholarship(
             "Amazon Future Engineer Scholarship", 10000, 40000,
