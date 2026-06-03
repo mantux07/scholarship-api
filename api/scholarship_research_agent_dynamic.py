@@ -243,6 +243,12 @@ class DynamicScholarshipAgent:
         # === CORPORATE SCHOLARSHIPS ===
         self.add_corporate_scholarships()
 
+        # === MERIT-BASED ONLY ===
+        # These searches surface merit-based awards only. The profile collects
+        # no financial data, so need-based scholarships can't be matched and are
+        # dropped here as the final step (catches every category added above).
+        self.scholarships = [s for s in self.scholarships if not self._is_need_based(s)]
+
     def add_universal_scholarships(self):
         """Add universal merit-based scholarships applicable to all students"""
 
@@ -324,13 +330,31 @@ class DynamicScholarshipAgent:
                 True, "University", 1.0
             )
 
+    def _is_stem_major(self) -> bool:
+        """True for STEM/CS/engineering majors.
+
+        Keeps the broad 'science' keyword (so e.g. Data Science / Environmental
+        Science still match) but first strips non-STEM fields that merely
+        contain the word 'science' (e.g. Political Science, Library Science) so
+        they don't false-match into STEM/corporate awards."""
+        cleaned = self.major.lower()
+        non_stem_science = [
+            'political science', 'social science', 'library science',
+            'consumer science', 'family and consumer science', 'military science',
+            'mortuary science', 'science fiction',
+        ]
+        for term in non_stem_science:
+            cleaned = cleaned.replace(term, '')
+        return any(word in cleaned for word in
+                   ['engineering', 'computer', 'science', 'technology', 'math'])
+
     def add_major_scholarships(self):
         """Add scholarships specific to student's major/discipline"""
 
         major_lower = self.major.lower()
 
         # STEM/Engineering scholarships
-        if any(word in major_lower for word in ['engineering', 'computer', 'science', 'technology', 'math']):
+        if self._is_stem_major():
             self.add_stem_scholarships()
 
         # Business scholarships
@@ -575,6 +599,21 @@ class DynamicScholarshipAgent:
         'axа achievement',
         'burger king scholars',
     ]
+
+    def _is_need_based(self, scholarship) -> bool:
+        """Return True if eligibility depends on financial need.
+
+        These searches surface merit-based awards only — and the student
+        profile collects no financial data (income/EFC/FAFSA), so need-based
+        awards can't be matched reliably and are dropped entirely."""
+        combined = (scholarship.eligibility + ' ' + scholarship.notes).lower()
+        need_keywords = [
+            'financial need', 'need-based', 'need based', 'low-income', 'low income',
+            'disadvantaged', 'adversity', 'significant obstacles', 'overcome obstacles',
+            'economic hardship', 'unmet financial', 'demonstrated need', 'demonstrating need',
+            'pell', 'efc', 'fafsa',
+        ]
+        return any(kw in combined for kw in need_keywords)
 
     def _is_hs_only(self, scholarship) -> bool:
         """Return True if this scholarship is only open to current high school students."""
@@ -1042,11 +1081,8 @@ class DynamicScholarshipAgent:
         """Add major corporate scholarships (CS/Engineering specific)"""
 
         # Amazon, Microsoft, and Apple all target CS/Engineering students, so
-        # only surface them for tech-related majors. Mirrors the keyword set
-        # used in add_major_scholarships() so gating stays consistent.
-        major_lower = self.major.lower()
-        if not any(word in major_lower for word in
-                   ['engineering', 'computer', 'science', 'technology', 'math']):
+        # only surface them for tech-related majors.
+        if not self._is_stem_major():
             return
 
         self.add_scholarship(
