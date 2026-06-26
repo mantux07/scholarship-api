@@ -184,7 +184,6 @@ function displayResults(data, formData) {
     const sources = data.stats.sources || {};
     const sourceBreakdown = [
         sources.database ? `${sources.database} database` : '',
-        sources.careeronestop ? `${sources.careeronestop} CareerOneStop` : '',
         sources.ai_suggested ? `${sources.ai_suggested} AI suggested` : '',
     ].filter(Boolean).join(' · ');
 
@@ -259,7 +258,6 @@ function displayResults(data, formData) {
             <div class="scholarship-header">
                 <div class="scholarship-title">
                     ${scholarship.name}
-                    ${scholarship.source === 'CareerOneStop' ? '<span class="source-badge source-careeronestop">CareerOneStop</span>' : ''}
                     ${scholarship.source === 'AI Suggested' ? '<span class="source-badge source-ai">AI Suggested ✨</span>' : ''}
                 </div>
                 <div class="priority-badge">Priority: ${scholarship.priority_score}/100</div>

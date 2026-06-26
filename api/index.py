@@ -25,7 +25,6 @@ from scholarship_output_modules import (
     ExcelExporter, PDFExporter, HTMLDashboard,
     CalendarGenerator, ApplicationTracker
 )
-import careeronestop_client
 import claude_suggestions
 import kv_store
 import email_client
@@ -185,8 +184,6 @@ def search_scholarships():
         external_results = []
         with ThreadPoolExecutor(max_workers=2) as executor:
             futures = {}
-            if careeronestop_client.is_available():
-                futures[executor.submit(careeronestop_client.search, student_profile)] = 'careeronestop'
             if claude_suggestions.is_available():
                 futures[executor.submit(claude_suggestions.get_suggestions, student_profile)] = 'claude'
 
@@ -223,7 +220,6 @@ def search_scholarships():
             'total_potential_award': f"${total_potential:,.0f}",
             'sources': {
                 'database': sum(1 for s in scholarships_json if s.get('source') == 'Database'),
-                'careeronestop': sum(1 for s in scholarships_json if s.get('source') == 'CareerOneStop'),
                 'ai_suggested': sum(1 for s in scholarships_json if s.get('source') == 'AI Suggested'),
             }
         }
@@ -705,15 +701,6 @@ def run_cron():
         profile = sub['profile']
         try:
             scholarships_json, _ = _run_agent(profile, 'priority')
-            # Add CareerOneStop results if available (skip Claude for cron to keep it fast)
-            if careeronestop_client.is_available():
-                external = careeronestop_client.search(profile)
-                seen = {s['name'].lower() for s in scholarships_json}
-                for ext in external:
-                    if ext['name'].lower() not in seen:
-                        scholarships_json.append(ext)
-                        seen.add(ext['name'].lower())
-
             email_client.send_weekly_alert(to_email, scholarships_json, profile)
             sent_count += 1
         except Exception as e:
