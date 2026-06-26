@@ -9,9 +9,23 @@ Generates relevant scholarships based on student profile inputs
 
 import csv
 import json
+import urllib.parse
 from datetime import datetime, timedelta
 from typing import List, Dict, Optional
 from dataclasses import dataclass, asdict
+
+# Known universities → their real financial-aid / scholarship page. Extend as
+# needed. Matched by case-insensitive substring on the submitted university name.
+KNOWN_UNIVERSITY_AID_URLS = {
+    'purdue': 'https://www.purdue.edu/dfa/types-of-aid/scholarships/',
+}
+
+
+def search_url(query: str) -> str:
+    """A Google search URL that always resolves. Used instead of fabricating
+    dead institution URLs (e.g. www.<name>.edu/scholarships) we can't reliably
+    construct for an arbitrary school or state."""
+    return "https://www.google.com/search?q=" + urllib.parse.quote_plus(query)
 
 @dataclass
 class Scholarship:
@@ -292,10 +306,22 @@ class DynamicScholarshipAgent:
             True, "National", 6.0
         )
 
+    def _university_aid_url(self) -> str:
+        """Working link to the university's financial-aid/scholarship office:
+        a real URL for known schools, else a Google search that always resolves."""
+        name = (self.university or '').strip()
+        low = name.lower()
+        for key, url in KNOWN_UNIVERSITY_AID_URLS.items():
+            if key in low:
+                return url
+        return search_url(f"{name} scholarships financial aid office"
+                          if name else "university scholarships financial aid")
+
     def add_university_scholarships(self):
         """Add scholarships specific to the student's university"""
 
         uni_name = self.university
+        aid_url = self._university_aid_url()
 
         # Generic university scholarships
         self.add_scholarship(
@@ -303,7 +329,7 @@ class DynamicScholarshipAgent:
             "$1,500-$5,000", "March 1, 2026", 3.0, 3.5,
             f"{uni_name} students with financial need and academic merit",
             True, 500, 2, False, "Medium",
-            f"https://www.{uni_name.lower().replace(' ', '')}.edu/scholarships",
+            aid_url,
             f"Contact {uni_name} Financial Aid office",
             True, "University", 3.0
         )
@@ -313,7 +339,7 @@ class DynamicScholarshipAgent:
             "$2,000-$8,000", "February 15, 2026", 3.5, 3.7,
             f"Current {uni_name} students with outstanding academic achievement",
             True, 750, 3, True, "High",
-            f"https://www.{uni_name.lower().replace(' ', '')}.edu/financialaid",
+            aid_url,
             "Highly competitive merit-based award",
             True, "University", 5.0
         )
@@ -325,7 +351,7 @@ class DynamicScholarshipAgent:
                 "$1,000-$4,000", "March 1, 2026", 3.3, 3.5,
                 "Out-of-state students, automatic consideration",
                 False, 0, 0, False, "Medium",
-                f"https://www.{uni_name.lower().replace(' ', '')}.edu/financialaid",
+                aid_url,
                 "Contact Financial Aid for eligibility",
                 True, "University", 1.0
             )
@@ -554,7 +580,7 @@ class DynamicScholarshipAgent:
                 "$1,000-$5,000", "March 31, 2026", 3.0, 3.5,
                 f"Residents of {state_name}",
                 True, 500, 2, False, "Medium",
-                f"https://www.{state_name.lower().replace(' ', '')}.gov/education/scholarships",
+                search_url(f"{state_name} state grants and scholarships higher education"),
                 f"Check with {state_name} Department of Education",
                 True, "State", 3.0
             )
