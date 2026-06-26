@@ -72,6 +72,11 @@ def _coerce_float(value, default: float) -> float:
 
 
 def _profile_validation_error(profile: dict) -> str:
+    university = profile.get('university', '').strip()
+    if not university or university.lower() in ('university', 'college', 'school', 'n/a', 'na'):
+        return 'University name is required.'
+    if len(university) < 3:
+        return 'Please enter your full university name.'
     if not profile.get('major'):
         return 'Major is required.'
     if not profile.get('year'):
@@ -83,7 +88,7 @@ def _build_profile(data: dict) -> dict:
     data = data or {}
     return {
         'gpa': _coerce_float(data.get('gpa'), 3.5),
-        'university': _clean_text(data, 'university', 'University'),
+        'university': _clean_text(data, 'university'),
         'major': _clean_text(data, 'major'),
         'year': _clean_text(data, 'year'),
         'heritage': _clean_text(data, 'heritage', 'Not specified'),
@@ -332,7 +337,7 @@ def _build_research_profile(data: dict) -> dict:
     data = data or {}
     return {
         'gpa': _coerce_float(data.get('gpa'), 3.0),
-        'university': _clean_text(data, 'university', 'University'),
+        'university': _clean_text(data, 'university'),
         'major': _clean_text(data, 'major'),
         'year': _clean_text(data, 'year'),
         'discipline': _clean_text(data, 'discipline'),
@@ -652,15 +657,19 @@ def subscribe():
         if not to_email or '@' not in to_email:
             return jsonify({'success': False, 'error': 'Valid email required'}), 400
 
+        if not kv_store.is_available() and not email_client.is_available():
+            return jsonify({'success': False, 'error': 'Email alerts are not available yet. Check back soon!'}), 503
+
         stored = kv_store.save_subscriber(to_email, profile)
         sent = email_client.send_confirmation(to_email, profile)
+
+        if not stored and not sent:
+            return jsonify({'success': False, 'error': 'Could not save subscription. Please try again.'}), 500
 
         return jsonify({
             'success': True,
             'stored': stored,
             'email_sent': sent,
-            'kv_available': kv_store.is_available(),
-            'email_available': email_client.is_available(),
         })
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
