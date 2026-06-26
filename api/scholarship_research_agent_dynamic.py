@@ -18,6 +18,18 @@ from dataclasses import dataclass, asdict
 # needed. Matched by case-insensitive substring on the submitted university name.
 KNOWN_UNIVERSITY_AID_URLS = {
     'purdue': 'https://www.purdue.edu/dfa/types-of-aid/scholarships/',
+    # Georgia (all URLs verified to return HTTP 200)
+    'university of georgia': 'https://osfa.uga.edu/types-of-aid/scholarships/',
+    'georgia institute': 'https://finaid.gatech.edu/scholarships/',
+    'georgia tech': 'https://finaid.gatech.edu/scholarships/',
+    'georgia state': 'https://sfs.gsu.edu/',
+    'georgia southern': 'https://em.georgiasouthern.edu/finaid/scholarships/',
+    'kennesaw': 'https://scholarships.kennesaw.edu/',
+    'emory': 'https://www.emory.edu/home/admission/financial-aid.html',
+    'mercer': 'https://www.mercer.edu/admissions/financial-aid/',
+    'augusta': 'https://www.augusta.edu/finaid/scholarships.php',
+    'valdosta': 'https://www.valdosta.edu/admissions/financial-aid/',
+    'morehouse': 'https://www.morehouse.edu/admissions/financial-aid-and-scholarships/',
 }
 
 
