@@ -53,7 +53,7 @@ Return ONLY a valid JSON array — no other text, no markdown. Each object must 
   "amount_display": "e.g. $5,000 or $2,000–$10,000 or Varies",
   "amount_min": 0,
   "amount_max": 0,
-  "deadline": "Month DD, YYYY or Varies or Rolling",
+  "deadline": "Month DD, YYYY for the 2026–2027 cycle or Varies or Rolling",
   "eligibility": "one sentence describing who qualifies",
   "application_url": "https://...",
   "notes": "1-2 sentences on why this matches the student",
@@ -111,9 +111,10 @@ def _normalize(s: dict) -> dict:
     for fmt in ('%B %d, %Y', '%b %d, %Y', '%m/%d/%Y'):
         try:
             dl = datetime.strptime(deadline_str, fmt)
-            d = (dl - today).days
-            if d >= 0:
-                days_until = d
+            while dl < today:
+                dl = dl.replace(year=dl.year + 1)
+            days_until = (dl - today).days
+            deadline_str = dl.strftime('%B %d, %Y')
             break
         except ValueError:
             continue

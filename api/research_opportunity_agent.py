@@ -8,6 +8,7 @@ Note: All Code owned by Tim
 """
 
 from dataclasses import dataclass, field
+from datetime import datetime
 from typing import List, Optional
 
 
@@ -41,6 +42,7 @@ class ResearchOpportunity:
     # values like: "Programming", "Research", "Leadership", "Writing"
     citizenship_required: bool = False
     priority_score: float = 0.0
+    days_until_deadline: int = 999
 
     @staticmethod
     def _tokens(value) -> List[str]:
@@ -151,6 +153,54 @@ class ResearchOpportunity:
         self.priority_score = round(min(score, 100), 2)
 
 
+def _parse_deadline_rolling(deadline_str: str):
+    """Parse a deadline string and roll it forward if past. Returns (display_str, days_until)."""
+    today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    if not deadline_str or any(deadline_str.lower().startswith(w) for w in ('rolling', 'varies', 'flexible', 'tbd')):
+        return deadline_str, 999
+
+    # Range formats like "February 1 - March 1, 2026" — take the end date
+    if ' - ' in deadline_str:
+        deadline_str = deadline_str.split(' - ')[-1].strip()
+
+    # Strip trailing qualifiers like "for summer", "(annual cycle)", "for fall conference"
+    import re
+    deadline_str = re.sub(r'\s+for\s+\w.*$', '', deadline_str, flags=re.IGNORECASE).strip()
+    deadline_str = re.sub(r'\s*\([^)]*\)$', '', deadline_str).strip()
+
+    formats = ['%B %d, %Y', '%b %d, %Y', '%B %Y', '%b %Y', '%m/%d/%Y', '%Y-%m-%d']
+    deadline_date = None
+    for fmt in formats:
+        try:
+            deadline_date = datetime.strptime(deadline_str, fmt)
+            break
+        except ValueError:
+            continue
+
+    if deadline_date is None:
+        month_map = {
+            'January': 1, 'February': 2, 'March': 3, 'April': 4,
+            'May': 5, 'June': 6, 'July': 7, 'August': 8,
+            'September': 9, 'October': 10, 'November': 11, 'December': 12
+        }
+        for year in ['2025', '2026', '2027']:
+            if year in deadline_str:
+                for month, num in month_map.items():
+                    if month in deadline_str:
+                        deadline_date = datetime(int(year), num, 1)
+                        break
+                break
+
+    if deadline_date is None:
+        return deadline_str, 999
+
+    while deadline_date < today:
+        deadline_date = deadline_date.replace(year=deadline_date.year + 1)
+
+    days_until = (deadline_date - today).days
+    return deadline_date.strftime('%B %d, %Y'), days_until
+
+
 class ResearchOpportunityAgent:
     """Agent to find and match research opportunities"""
 
@@ -180,6 +230,8 @@ class ResearchOpportunityAgent:
         for opp in matched:
             opp.calculate_priority(self.student_profile)
         matched.sort(key=lambda x: x.priority_score, reverse=True)
+        for opp in matched:
+            opp.deadline, opp.days_until_deadline = _parse_deadline_rolling(opp.deadline)
         return matched
 
     def add_federal_reu_programs(self):
@@ -345,7 +397,7 @@ class ResearchOpportunityAgent:
                 eligible_years=["Sophomore"],
                 majors=["Biology", "Chemistry", "Biochemistry", "Neuroscience", "Public Health"],
                 description="Honors program preparing URM students for biomedical PhD programs",
-                application_url="https://www.nigms.nih.gov/training/marc",
+                application_url="https://www.nigms.nih.gov/training/",
                 application_tips="Must attend a participating institution; research experience and commitment to PhD valued",
                 housing_provided=False, travel_covered=False,
                 category="Identity-Focused", competitiveness="High",
@@ -502,7 +554,7 @@ class ResearchOpportunityAgent:
                 eligible_years=["Sophomore", "Junior", "Senior"],
                 majors=["Engineering", "Computer Science", "Physics", "Chemistry", "Mathematics"],
                 description="Defense-oriented research at U.S. Navy laboratories",
-                application_url="https://nreip.asee.org/",
+                application_url="https://www.onr.navy.mil/education-outreach/sponsored-research/naval-research-enterprise-internship-program",
                 application_tips="Apply early; security clearance not required but background check is",
                 housing_provided=False, travel_covered=False,
                 category="Federal Research", competitiveness="Medium",

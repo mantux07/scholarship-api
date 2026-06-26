@@ -360,6 +360,7 @@ def _opportunity_to_dict(o) -> dict:
         'stipend_display': f"${o.stipend_amount:,}" if o.stipend_amount > 0 else o.compensation_type,
         'duration': o.duration,
         'deadline': o.deadline,
+        'days_until_deadline': getattr(o, 'days_until_deadline', 999),
         'gpa_min': o.gpa_min,
         'gpa_preferred': o.gpa_preferred,
         'eligible_years': o.eligible_years,

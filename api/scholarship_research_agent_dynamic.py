@@ -429,7 +429,7 @@ class DynamicScholarshipAgent:
             "$2,000-$8,000", "March 15, 2026", 3.0, 3.5,
             "Students pursuing arts, music, or humanities",
             True, 800, 2, False, "Medium",
-            "https://www.artsandhumanities.org/scholarships",
+            "https://www.neh.gov/grants",
             "Portfolio or audition may be required",
             False, "National", 4.5
         )
@@ -466,7 +466,7 @@ class DynamicScholarshipAgent:
                 "$3,000-$6,200", "March 15, 2026", 3.0, 3.25,
                 "Students of color in STEM",
                 True, 600, 2, False, "Medium",
-                "https://tmcf.org/our-scholarships",
+                "https://tmcf.org/scholarships/",
                 "Leadership and community service emphasized",
                 False, "Diversity", 4.0
             )
@@ -488,7 +488,7 @@ class DynamicScholarshipAgent:
                 "$1,000-$5,000", "April 30, 2026", 3.0, 3.3,
                 "Hispanic/Latinx students",
                 True, 500, 2, False, "Medium",
-                "https://shpe.org/students/scholarships/",
+                "https://shpe.org/",
                 "Engineering and STEM focus",
                 False, "Diversity", 3.5
             )
@@ -500,7 +500,7 @@ class DynamicScholarshipAgent:
                 "$2,500-$20,000", "January 15, 2026", 2.7, 3.3,
                 "Asian American and Pacific Islander students",
                 True, 500, 2, False, "Medium",
-                "https://www.apiasf.org/scholarship.html",
+                "https://apiascholars.org/",
                 "Multiple scholarship programs",
                 False, "Diversity", 4.0
             )
@@ -524,7 +524,7 @@ class DynamicScholarshipAgent:
                 "$2,500-$10,000", "February 1, 2026", 3.0, 3.4,
                 "Women pursuing STEM degrees",
                 True, 700, 2, False, "Medium",
-                "https://www.womenstem.org/scholarships",
+                "https://swe.org/scholarships/",
                 "Encouraging women in STEM fields",
                 False, "Diversity", 4.5
             )
@@ -535,7 +535,7 @@ class DynamicScholarshipAgent:
             "$5,000-$30,000", "January 22, 2026", 3.0, 3.5,
             "LGBTQ students with demonstrated leadership",
             True, 800, 2, True, "High",
-            "https://pointfoundation.org/point-apply/",
+            "https://pointfoundation.org/scholarship/",
             "Largest scholarship for LGBTQ students",
             False, "Diversity", 5.0
         )
@@ -564,7 +564,7 @@ class DynamicScholarshipAgent:
             "$2,500-$10,000", "February 15, 2026", 2.8, 3.3,
             "First-generation college students",
             True, 700, 2, False, "Medium",
-            "https://www.firstgenerationscholarship.org",
+            "https://www.jkcf.org/",
             "Support for students whose parents didn't attend college",
             False, "National", 4.5
         )
@@ -577,7 +577,7 @@ class DynamicScholarshipAgent:
             "$5,000-$15,000", "March 1, 2026", 2.5, 3.0,
             "Dependents of military service members",
             True, 600, 2, False, "Medium",
-            "https://www.militaryscholar.org",
+            "https://www.fisherhouse.org/programs/scholarship-programs/",
             "For children/spouses of active duty or veterans",
             True, "Military", 4.0
         )
