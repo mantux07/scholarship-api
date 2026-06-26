@@ -438,9 +438,12 @@ class DynamicScholarshipAgent:
         """Add diversity and heritage-based scholarships"""
 
         heritage_lower = self.heritage.lower()
+        # "North African" / "Middle Eastern/North African" (MENA) must not match
+        # the African American category — strip it before substring matching.
+        heritage_aa = heritage_lower.replace('north african', '').replace('middle eastern', '')
 
         # African American scholarships
-        if 'african' in heritage_lower or 'black' in heritage_lower:
+        if 'african' in heritage_aa or 'black' in heritage_aa:
             self.add_scholarship(
                 "United Negro College Fund (UNCF) Scholarship", 5000, 10000,
                 "$5,000-$10,000 + internship", "December 2025", 3.0, 3.3,
