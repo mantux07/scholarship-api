@@ -116,7 +116,7 @@ document.getElementById('scholarshipForm').addEventListener('submit', async func
         }
     } catch (error) {
         console.error('Error:', error);
-        alert('Failed to search. Please try again or check your internet connection.');
+        alert(error.message || 'Failed to search. Please try again or check your internet connection.');
     } finally {
         document.getElementById('loading').style.display = 'none';
         document.getElementById('searchBtn').disabled = false;
@@ -130,12 +130,15 @@ async function searchScholarships(formData) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
     });
-    if (!response.ok) throw new Error('Scholarship search failed');
-    const data = await response.json();
+    const data = await response.json().catch(() => null);
+    if (!response.ok) {
+        throw new Error(data?.error || 'Scholarship search failed. Please try again.');
+    }
+    if (!data) throw new Error('The search service returned an invalid response. Please try again.');
     if (data.success) {
         displayResults(data, formData);
     } else {
-        alert('Error: ' + data.error);
+        throw new Error(data.error || 'Scholarship search failed. Please try again.');
     }
 }
 
@@ -146,12 +149,15 @@ async function searchResearch(formData) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
     });
-    if (!response.ok) throw new Error('Research search failed');
-    const data = await response.json();
+    const data = await response.json().catch(() => null);
+    if (!response.ok) {
+        throw new Error(data?.error || 'Research search failed. Please try again.');
+    }
+    if (!data) throw new Error('The search service returned an invalid response. Please try again.');
     if (data.success) {
         displayResearchResults(data, formData);
     } else {
-        alert('Error: ' + data.error);
+        throw new Error(data.error || 'Research search failed. Please try again.');
     }
 }
 
