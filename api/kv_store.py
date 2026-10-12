@@ -10,7 +10,10 @@ Env vars auto-set by Vercel: KV_REST_API_URL, KV_REST_API_TOKEN
 
 import os
 import json
+import logging
 import requests
+
+log = logging.getLogger(__name__)
 
 KV_URL = os.environ.get('KV_REST_API_URL', '')
 KV_TOKEN = os.environ.get('KV_REST_API_TOKEN', '')
@@ -38,9 +41,12 @@ def save_subscriber(email: str, profile: dict) -> bool:
             data=json.dumps(value),
             timeout=5
         )
-        return r.status_code == 200
-    except Exception as e:
-        print(f"KV save error: {e}")
+        if r.status_code != 200:
+            log.error("KV save failed: HTTP %s %s", r.status_code, r.text[:200])
+            return False
+        return True
+    except Exception:
+        log.exception("KV save error")
         return False
 
 
@@ -51,9 +57,12 @@ def unsubscribe(email: str) -> bool:
     try:
         key = f'subscriber:{email.lower().strip()}'
         r = requests.get(f'{KV_URL}/del/{key}', headers=_headers(), timeout=5)
-        return r.status_code == 200
-    except Exception as e:
-        print(f"KV delete error: {e}")
+        if r.status_code != 200:
+            log.error("KV delete failed: HTTP %s %s", r.status_code, r.text[:200])
+            return False
+        return True
+    except Exception:
+        log.exception("KV delete error")
         return False
 
 
@@ -65,6 +74,7 @@ def get_all_subscribers() -> list:
         # Get all keys matching subscriber:*
         r = requests.get(f'{KV_URL}/keys/subscriber:*', headers=_headers(), timeout=5)
         if r.status_code != 200:
+            log.error("KV key listing failed: HTTP %s %s", r.status_code, r.text[:200])
             return []
 
         keys = r.json().get('result', [])
@@ -74,6 +84,7 @@ def get_all_subscribers() -> list:
             try:
                 val_r = requests.get(f'{KV_URL}/get/{key}', headers=_headers(), timeout=5)
                 if val_r.status_code != 200:
+                    log.warning("KV get %s failed: HTTP %s", key, val_r.status_code)
                     continue
                 raw = val_r.json().get('result')
                 if not raw:
@@ -82,9 +93,10 @@ def get_all_subscribers() -> list:
                 email = key.replace('subscriber:', '')
                 subscribers.append({'email': email, 'profile': profile})
             except Exception:
+                log.warning("Skipping unreadable subscriber record %s", key, exc_info=True)
                 continue
 
         return subscribers
-    except Exception as e:
-        print(f"KV get all error: {e}")
+    except Exception:
+        log.exception("KV get all error")
         return []

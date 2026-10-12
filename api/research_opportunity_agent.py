@@ -7,9 +7,14 @@ Author: Tim Smith
 Note: All Code owned by Tim
 """
 
+import logging
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import List, Optional
+
+from dedupe import DuplicateFilter
+
+log = logging.getLogger(__name__)
 
 
 @dataclass
@@ -219,6 +224,7 @@ class ResearchOpportunityAgent:
         self.add_corporate_research()
         self.add_tech_company_research()
         self.add_international_programs()
+        self._drop_duplicates()
 
         # Merit-based only: exclude identity/need-restricted programs (e.g.
         # McNair, LSAMP, NIH UGSP). These are gated on first-gen / low-income /
@@ -233,6 +239,18 @@ class ResearchOpportunityAgent:
         for opp in matched:
             opp.deadline, opp.days_until_deadline = _parse_deadline_rolling(opp.deadline)
         return matched
+
+    def _drop_duplicates(self):
+        """Keep the first entry for each program; catalog methods can overlap."""
+        seen = DuplicateFilter()
+        unique = []
+        for opp in self.opportunities:
+            if seen.is_duplicate(opp.name):
+                log.debug("Skipping duplicate research opportunity %r", opp.name)
+                continue
+            seen.add(opp.name)
+            unique.append(opp)
+        self.opportunities = unique
 
     def add_federal_reu_programs(self):
         self.opportunities.extend([

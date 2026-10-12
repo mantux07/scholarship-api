@@ -10,7 +10,10 @@ Env var required: ANTHROPIC_API_KEY
 
 import os
 import json
+import logging
 from datetime import datetime
+
+log = logging.getLogger(__name__)
 
 ANTHROPIC_API_KEY = os.environ.get('ANTHROPIC_API_KEY', '')
 
@@ -26,7 +29,8 @@ def get_suggestions(student_profile: dict) -> list:
 
     try:
         import anthropic
-        client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+        # Stay under index.py's AI_SUGGESTIONS_TIMEOUT so the worker thread doesn't outlive the request.
+        client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY, timeout=18.0, max_retries=1)
 
         message = client.messages.create(
             model='claude-haiku-4-5-20251001',
@@ -63,30 +67,35 @@ Return ONLY a valid JSON array — no other text, no markdown. Each object must 
         )
 
         raw = message.content[0].text.strip()
-        print(f"[Claude] raw response (first 500): {raw[:500]}")
+        log.debug("Claude raw response (first 500 chars): %s", raw[:500])
 
         start = raw.find('[')
         end = raw.rfind(']') + 1
         if start < 0 or end <= start:
-            print(f"[Claude] no JSON array found in response")
+            log.warning("Claude response contained no JSON array (first 200 chars: %r)", raw[:200])
             return []
 
         suggestions = json.loads(raw[start:end])
-        print(f"[Claude] parsed {len(suggestions)} suggestions from JSON")
+        if not isinstance(suggestions, list):
+            log.warning("Claude JSON was not a list; ignoring")
+            return []
 
         results = []
         for s in suggestions:
-            if not s.get('name'):
+            if not isinstance(s, dict) or not s.get('name'):
                 continue
             try:
                 results.append(_normalize(s))
-            except Exception as norm_err:
-                print(f"[Claude] normalize error for '{s.get('name')}': {norm_err}")
-        print(f"[Claude] returning {len(results)} normalized suggestions")
+            except Exception:
+                log.warning("Could not normalize Claude suggestion %r", s.get('name'), exc_info=True)
+        log.info("Claude suggestions: %d parsed, %d usable", len(suggestions), len(results))
         return results
 
-    except Exception as e:
-        print(f"Claude suggestions error: {e}")
+    except json.JSONDecodeError:
+        log.warning("Claude returned malformed JSON; no AI suggestions this search")
+        return []
+    except Exception:
+        log.exception("Claude suggestions request failed")
         return []
 
 

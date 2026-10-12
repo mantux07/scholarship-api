@@ -9,15 +9,31 @@ Adapted for Vercel serverless deployment
 
 import sys
 import os
+import io
+import logging
+import time
+import uuid
 
 # Add the api/ directory to sys.path so sibling modules are importable
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from flask import Flask, request, jsonify, send_file, send_from_directory
+from flask import Flask, request, jsonify, send_file, send_from_directory, g
 from flask_cors import CORS
+from werkzeug.exceptions import HTTPException
 import tempfile
 from datetime import datetime
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeout
+
+# Vercel captures stdout/stderr as function logs. LOG_LEVEL=DEBUG shows
+# skipped duplicates and other per-listing detail.
+logging.basicConfig(
+    level=os.environ.get('LOG_LEVEL', 'INFO').upper(),
+    format='%(levelname)s %(name)s: %(message)s',
+    stream=sys.stdout,
+)
+for _noisy in ('urllib3', 'httpx', 'httpcore', 'anthropic'):
+    logging.getLogger(_noisy).setLevel(logging.WARNING)
+log = logging.getLogger('scholarship_api')
 
 from scholarship_research_agent_dynamic import DynamicScholarshipAgent
 from research_opportunity_agent import ResearchOpportunityAgent
@@ -28,6 +44,17 @@ from scholarship_output_modules import (
 import claude_suggestions
 import kv_store
 import email_client
+from dedupe import DuplicateFilter
+
+# Claude suggestions are optional; past this the search returns database results only.
+AI_SUGGESTIONS_TIMEOUT = 20
+
+SCHOLARSHIP_FORMATS = {'csv', 'excel', 'pdf', 'calendar', 'tracker', 'html'}
+RESEARCH_FORMATS = {'csv', 'excel', 'pdf', 'calendar', 'tracker'}
+
+
+class BadRequest(Exception):
+    """Client error whose message is safe to show the user (returned as 400)."""
 
 app = Flask(__name__)
 CORS(app)
@@ -35,12 +62,39 @@ CORS(app)
 STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static')
 
 
+@app.before_request
+def start_timer():
+    g.start_time = time.perf_counter()
+
+
 @app.after_request
 def add_no_store_headers(response):
     """Search results depend on the current form payload; don't cache API responses."""
     if request.path.startswith('/api/'):
         response.headers['Cache-Control'] = 'no-store, max-age=0'
+        elapsed_ms = (time.perf_counter() - g.get('start_time', time.perf_counter())) * 1000
+        log.info("%s %s -> %s (%.0f ms)", request.method, request.path, response.status_code, elapsed_ms)
     return response
+
+
+@app.errorhandler(BadRequest)
+def handle_bad_request(e):
+    log.info("Bad request on %s: %s", request.path, e)
+    return jsonify({'success': False, 'error': str(e)}), 400
+
+
+@app.errorhandler(Exception)
+def handle_unexpected_error(e):
+    """Log the full traceback; never leak exception text to the client."""
+    if isinstance(e, HTTPException):
+        if not request.path.startswith('/api/'):
+            return e
+        return jsonify({'success': False, 'error': e.description}), e.code
+    log.exception("Unhandled error on %s %s", request.method, request.path)
+    return jsonify({
+        'success': False,
+        'error': 'Something went wrong on our end. Please try again in a moment.',
+    }), 500
 
 
 # ── Static file serving ────────────────────────────────────────────────────────
@@ -61,6 +115,39 @@ def _clean_text(data: dict, key: str, default: str = '') -> str:
     if value is None:
         return default
     return str(value).strip() or default
+
+
+def _json_body() -> dict:
+    """Request JSON as a dict; malformed or non-object bodies are a 400."""
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        raise BadRequest('Request body must be a JSON object.')
+    return data
+
+
+def _require_valid(profile: dict):
+    error = _profile_validation_error(profile)
+    if error:
+        raise BadRequest(error)
+
+
+def _send_temp_file(filepath: str, mimetype: str, download_name: str):
+    """Send a generated file from memory and delete it from /tmp, which persists
+    (and fills up) across requests on a warm Vercel instance."""
+    try:
+        with open(filepath, 'rb') as f:
+            payload = io.BytesIO(f.read())
+    finally:
+        try:
+            os.remove(filepath)
+        except OSError:
+            log.warning("Could not remove temp file %s", filepath)
+    return send_file(payload, mimetype=mimetype, as_attachment=True, download_name=download_name)
+
+
+def _temp_path(filename: str) -> str:
+    # Unique per request: second-resolution timestamps collide under concurrent downloads.
+    return os.path.join(tempfile.gettempdir(), f"{uuid.uuid4().hex}_{filename}")
 
 
 def _coerce_float(value, default: float) -> float:
@@ -168,162 +255,166 @@ def _run_agent(student_profile: dict, sort_by: str) -> list:
 
 @app.route('/api/search', methods=['POST'])
 def search_scholarships():
-    try:
-        data = request.json
-        student_profile = _build_profile(data)
-        validation_error = _profile_validation_error(student_profile)
-        if validation_error:
-            return jsonify({'success': False, 'error': validation_error}), 400
-        sort_by = data.get('sort', 'priority')
-        gpa = student_profile['gpa']
+    data = _json_body()
+    student_profile = _build_profile(data)
+    _require_valid(student_profile)
+    sort_by = data.get('sort', 'priority')
+    gpa = student_profile['gpa']
 
-        # Run local agent
-        scholarships_json, agent = _run_agent(student_profile, sort_by)
+    # Run local agent
+    scholarships_json, agent = _run_agent(student_profile, sort_by)
 
-        # Run external sources in parallel (fail gracefully if keys not set)
-        external_results = []
-        with ThreadPoolExecutor(max_workers=2) as executor:
-            futures = {}
-            if claude_suggestions.is_available():
-                futures[executor.submit(claude_suggestions.get_suggestions, student_profile)] = 'claude'
+    external_results = _fetch_ai_suggestions(student_profile)
 
-            for future in as_completed(futures, timeout=20):
-                try:
-                    external_results.extend(future.result())
-                except Exception as e:
-                    print(f"External source error ({futures[future]}): {e}")
+    # Deduplicate (prefer database entries). Names are compared fuzzily and
+    # URLs by host+path, since Claude rarely spells a program exactly as the
+    # catalog does ("The Barry M. Goldwater Scholarship" vs "Barry Goldwater Scholarship").
+    seen = DuplicateFilter()
+    for s in scholarships_json:
+        seen.add(s['name'], s.get('application_url', ''))
+    added = 0
+    for ext in external_results:
+        name = ext.get('name', '')
+        url = ext.get('application_url', '')
+        if seen.is_duplicate(name, url):
+            log.debug("Dropping AI suggestion already in results: %r", name)
+            continue
+        seen.add(name, url)
+        scholarships_json.append(ext)
+        added += 1
 
-        # Deduplicate by name (prefer database entries)
-        seen_names = {s['name'].lower() for s in scholarships_json}
-        for ext in external_results:
-            if ext['name'].lower() not in seen_names:
-                seen_names.add(ext['name'].lower())
-                scholarships_json.append(ext)
+    # Re-sort combined list
+    scholarships_json = _sort_dicts(scholarships_json, sort_by)
 
-        # Re-sort combined list
-        scholarships_json = _sort_dicts(scholarships_json, sort_by)
+    # Stats
+    gpa_eligible = [s for s in scholarships_json if s.get('min_gpa', 0) <= gpa]
+    urgent = [s for s in scholarships_json
+              if isinstance(s.get('days_until_deadline'), int)
+              and 0 < s['days_until_deadline'] <= 30]
+    total_potential = sum(
+        (s.get('amount_min', 0) + s.get('amount_max', 0)) / 2
+        for s in scholarships_json
+    )
 
-        # Stats
-        gpa_eligible = [s for s in scholarships_json if s.get('min_gpa', 0) <= gpa]
-        urgent = [s for s in scholarships_json
-                  if isinstance(s.get('days_until_deadline'), int)
-                  and 0 < s['days_until_deadline'] <= 30]
-        total_potential = sum(
-            (s.get('amount_min', 0) + s.get('amount_max', 0)) / 2
-            for s in scholarships_json
-        )
-
-        stats = {
-            'total_scholarships': len(scholarships_json),
-            'gpa_eligible': len(gpa_eligible),
-            'urgent_deadlines_30_days': len(urgent),
-            'total_potential_award': f"${total_potential:,.0f}",
-            'sources': {
-                'database': sum(1 for s in scholarships_json if s.get('source') == 'Database'),
-                'ai_suggested': sum(1 for s in scholarships_json if s.get('source') == 'AI Suggested'),
-            }
+    stats = {
+        'total_scholarships': len(scholarships_json),
+        'gpa_eligible': len(gpa_eligible),
+        'urgent_deadlines_30_days': len(urgent),
+        'total_potential_award': f"${total_potential:,.0f}",
+        'sources': {
+            'database': sum(1 for s in scholarships_json if s.get('source') == 'Database'),
+            'ai_suggested': sum(1 for s in scholarships_json if s.get('source') == 'AI Suggested'),
         }
+    }
 
-        return jsonify({
-            'success': True,
-            'profile': student_profile,
-            'stats': stats,
-            'scholarships': scholarships_json,
-            'total': len(scholarships_json)
-        })
+    log.info("Scholarship search: major=%r year=%r -> %d results (%d database, %d of %d AI suggestions kept)",
+             student_profile['major'], student_profile['year'], len(scholarships_json),
+             stats['sources']['database'], added, len(external_results))
 
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+    return jsonify({
+        'success': True,
+        'profile': student_profile,
+        'stats': stats,
+        'scholarships': scholarships_json,
+        'total': len(scholarships_json)
+    })
+
+
+def _fetch_ai_suggestions(student_profile: dict) -> list:
+    """Claude suggestions, or [] if unavailable, failing, or slower than the timeout."""
+    if not claude_suggestions.is_available():
+        return []
+    executor = ThreadPoolExecutor(max_workers=1)
+    future = executor.submit(claude_suggestions.get_suggestions, student_profile)
+    try:
+        return future.result(timeout=AI_SUGGESTIONS_TIMEOUT)
+    except FuturesTimeout:
+        log.warning("Claude suggestions timed out after %ss; returning database results only",
+                    AI_SUGGESTIONS_TIMEOUT)
+        return []
+    except Exception:
+        log.exception("Claude suggestions failed; returning database results only")
+        return []
+    finally:
+        # Don't block the response waiting on a slow API call.
+        executor.shutdown(wait=False, cancel_futures=True)
 
 
 # ── Download endpoint ──────────────────────────────────────────────────────────
 
 @app.route('/api/download/<format_type>', methods=['POST'])
 def download_file(format_type):
-    try:
-        data = request.json
-        student_profile = _build_profile(data)
-        validation_error = _profile_validation_error(student_profile)
-        if validation_error:
-            return jsonify({'success': False, 'error': validation_error}), 400
-        sort_by = data.get('sort', 'priority')
-        gpa = student_profile['gpa']
-        state = student_profile.get('state', '')
-        discipline = student_profile.get('discipline', '')
+    if format_type not in SCHOLARSHIP_FORMATS:
+        raise BadRequest('Invalid format type')
+    data = _json_body()
+    student_profile = _build_profile(data)
+    _require_valid(student_profile)
+    sort_by = data.get('sort', 'priority')
+    gpa = student_profile['gpa']
 
-        agent = DynamicScholarshipAgent(
-            user_gpa=gpa,
-            home_state=state,
-            discipline=discipline,
-            student_profile=student_profile
-        )
-        agent.research_scholarships()
+    _, agent = _run_agent(student_profile, sort_by)
 
-        if sort_by == 'deadline':
-            scholarships = agent.sort_by_deadline()
-        elif sort_by == 'amount':
-            scholarships = agent.sort_by_amount()
-        else:
-            scholarships = agent.sort_by_priority()
+    if sort_by == 'deadline':
+        scholarships = agent.sort_by_deadline()
+    elif sort_by == 'amount':
+        scholarships = agent.sort_by_amount()
+    else:
+        scholarships = agent.sort_by_priority()
 
-        scholarships = [s for s in scholarships if s.days_until_deadline >= 0]
+    scholarships = [s for s in scholarships if s.days_until_deadline >= 0]
 
-        temp_dir = tempfile.gettempdir()
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
 
-        if format_type == 'csv':
-            filename = f'scholarships_{timestamp}.csv'
-            filepath = os.path.join(temp_dir, filename)
-            agent.export_to_csv(filepath, sort_by)
-            mimetype = 'text/csv'
+    if format_type == 'csv':
+        filename = f'scholarships_{timestamp}.csv'
+        filepath = _temp_path(filename)
+        agent.export_to_csv(filepath, sort_by)
+        mimetype = 'text/csv'
 
-        elif format_type == 'excel':
-            excel_exporter = ExcelExporter()
-            if not excel_exporter.available:
-                return jsonify({'success': False, 'error': 'Excel export not available'}), 500
-            filename = f'scholarships_{timestamp}.xlsx'
-            filepath = os.path.join(temp_dir, filename)
-            excel_exporter.export(scholarships, filepath, student_profile)
-            mimetype = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    elif format_type == 'excel':
+        excel_exporter = ExcelExporter()
+        if not excel_exporter.available:
+            log.error("Excel export requested but openpyxl is not installed")
+            return jsonify({'success': False, 'error': 'Excel export not available'}), 500
+        filename = f'scholarships_{timestamp}.xlsx'
+        filepath = _temp_path(filename)
+        excel_exporter.export(scholarships, filepath, student_profile)
+        mimetype = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 
-        elif format_type == 'pdf':
-            pdf_exporter = PDFExporter()
-            if not pdf_exporter.available:
-                return jsonify({'success': False, 'error': 'PDF export not available'}), 500
-            filename = f'scholarships_{timestamp}.pdf'
-            filepath = os.path.join(temp_dir, filename)
-            pdf_exporter.export(scholarships, filepath, gpa, student_profile)
-            mimetype = 'application/pdf'
+    elif format_type == 'pdf':
+        pdf_exporter = PDFExporter()
+        if not pdf_exporter.available:
+            log.error("PDF export requested but reportlab is not installed")
+            return jsonify({'success': False, 'error': 'PDF export not available'}), 500
+        filename = f'scholarships_{timestamp}.pdf'
+        filepath = _temp_path(filename)
+        pdf_exporter.export(scholarships, filepath, gpa, student_profile)
+        mimetype = 'application/pdf'
 
-        elif format_type == 'calendar':
-            calendar_gen = CalendarGenerator()
-            filename = f'scholarships_{timestamp}.ics'
-            filepath = os.path.join(temp_dir, filename)
-            calendar_gen.export(scholarships, filepath)
-            mimetype = 'text/calendar'
+    elif format_type == 'calendar':
+        calendar_gen = CalendarGenerator()
+        filename = f'scholarships_{timestamp}.ics'
+        filepath = _temp_path(filename)
+        calendar_gen.export(scholarships, filepath)
+        mimetype = 'text/calendar'
 
-        elif format_type == 'tracker':
-            tracker = ApplicationTracker()
-            filename = f'scholarship_tracker_{timestamp}.csv'
-            filepath = os.path.join(temp_dir, filename)
-            tracker.create_tracker(scholarships, filepath)
-            mimetype = 'text/csv'
+    elif format_type == 'tracker':
+        tracker = ApplicationTracker()
+        filename = f'scholarship_tracker_{timestamp}.csv'
+        filepath = _temp_path(filename)
+        tracker.create_tracker(scholarships, filepath)
+        mimetype = 'text/csv'
 
-        elif format_type == 'html':
-            html_dashboard = HTMLDashboard()
-            stats = agent.generate_summary_stats()
-            filename = f'scholarships_{timestamp}.html'
-            filepath = os.path.join(temp_dir, filename)
-            html_dashboard.export(scholarships, filepath, stats, student_profile)
-            mimetype = 'text/html'
+    else:  # html
+        html_dashboard = HTMLDashboard()
+        stats = agent.generate_summary_stats()
+        filename = f'scholarships_{timestamp}.html'
+        filepath = _temp_path(filename)
+        html_dashboard.export(scholarships, filepath, stats, student_profile)
+        mimetype = 'text/html'
 
-        else:
-            return jsonify({'success': False, 'error': 'Invalid format type'}), 400
-
-        return send_file(filepath, mimetype=mimetype, as_attachment=True, download_name=filename)
-
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+    log.info("Scholarship export: format=%s rows=%d", format_type, len(scholarships))
+    return _send_temp_file(filepath, mimetype, filename)
 
 
 # ── Research opportunity endpoints ─────────────────────────────────────────────
@@ -380,42 +471,40 @@ def _opportunity_to_dict(o) -> dict:
 @app.route('/api/research', methods=['POST'])
 def search_research():
     """Search research opportunities based on student profile."""
-    try:
-        data = request.json or {}
-        student_profile = _build_research_profile(data)
-        validation_error = _profile_validation_error(student_profile)
-        if validation_error:
-            return jsonify({'success': False, 'error': validation_error}), 400
+    data = _json_body()
+    student_profile = _build_research_profile(data)
+    _require_valid(student_profile)
 
-        agent = ResearchOpportunityAgent(student_profile)
-        opportunities = agent.research_opportunities()
+    agent = ResearchOpportunityAgent(student_profile)
+    opportunities = agent.research_opportunities()
 
-        opportunities_json = [_opportunity_to_dict(o) for o in opportunities]
+    opportunities_json = [_opportunity_to_dict(o) for o in opportunities]
 
-        total_paid = sum(1 for o in opportunities if o.stipend_amount > 0)
-        avg_stipend = (
-            sum(o.stipend_amount for o in opportunities if o.stipend_amount > 0)
-            / total_paid
-        ) if total_paid else 0
-        with_housing = sum(1 for o in opportunities if o.housing_provided)
+    total_paid = sum(1 for o in opportunities if o.stipend_amount > 0)
+    avg_stipend = (
+        sum(o.stipend_amount for o in opportunities if o.stipend_amount > 0)
+        / total_paid
+    ) if total_paid else 0
+    with_housing = sum(1 for o in opportunities if o.housing_provided)
 
-        stats = {
-            'total_opportunities': len(opportunities),
-            'paid_opportunities': total_paid,
-            'average_stipend': f"${avg_stipend:,.0f}",
-            'with_housing': with_housing,
-            'categories': sorted({o.category for o in opportunities}),
-        }
+    stats = {
+        'total_opportunities': len(opportunities),
+        'paid_opportunities': total_paid,
+        'average_stipend': f"${avg_stipend:,.0f}",
+        'with_housing': with_housing,
+        'categories': sorted({o.category for o in opportunities}),
+    }
 
-        return jsonify({
-            'success': True,
-            'profile': student_profile,
-            'stats': stats,
-            'opportunities': opportunities_json,
-            'total': len(opportunities_json),
-        })
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+    log.info("Research search: major=%r year=%r -> %d results",
+             student_profile['major'], student_profile['year'], len(opportunities_json))
+
+    return jsonify({
+        'success': True,
+        'profile': student_profile,
+        'stats': stats,
+        'opportunities': opportunities_json,
+        'total': len(opportunities_json),
+    })
 
 
 def _research_to_rows(opportunities):
@@ -586,96 +675,93 @@ def _research_export_tracker(opportunities, filepath):
 @app.route('/api/research/download/<format_type>', methods=['POST'])
 def download_research(format_type):
     """Generate and download research opportunity files."""
-    try:
-        data = request.json or {}
-        student_profile = _build_research_profile(data)
-        validation_error = _profile_validation_error(student_profile)
-        if validation_error:
-            return jsonify({'success': False, 'error': validation_error}), 400
+    if format_type not in RESEARCH_FORMATS:
+        raise BadRequest('Invalid format type')
+    data = _json_body()
+    student_profile = _build_research_profile(data)
+    _require_valid(student_profile)
 
-        agent = ResearchOpportunityAgent(student_profile)
-        opportunities = agent.research_opportunities()
+    agent = ResearchOpportunityAgent(student_profile)
+    opportunities = agent.research_opportunities()
 
-        temp_dir = tempfile.gettempdir()
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
 
-        if format_type == 'csv':
-            filename = f'research_opportunities_{timestamp}.csv'
-            filepath = os.path.join(temp_dir, filename)
-            _research_export_csv(opportunities, filepath)
-            mimetype = 'text/csv'
-        elif format_type == 'excel':
-            try:
-                import openpyxl  # noqa: F401
-            except ImportError:
-                return jsonify({'success': False, 'error': 'Excel export requires openpyxl'}), 500
-            filename = f'research_opportunities_{timestamp}.xlsx'
-            filepath = os.path.join(temp_dir, filename)
-            _research_export_excel(opportunities, filepath, student_profile)
-            mimetype = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        elif format_type == 'pdf':
-            try:
-                import reportlab  # noqa: F401
-            except ImportError:
-                return jsonify({'success': False, 'error': 'PDF export requires reportlab'}), 500
-            filename = f'research_opportunities_{timestamp}.pdf'
-            filepath = os.path.join(temp_dir, filename)
-            _research_export_pdf(opportunities, filepath, student_profile)
-            mimetype = 'application/pdf'
-        elif format_type == 'calendar':
-            filename = f'research_deadlines_{timestamp}.ics'
-            filepath = os.path.join(temp_dir, filename)
-            _research_export_calendar(opportunities, filepath)
-            mimetype = 'text/calendar'
-        elif format_type == 'tracker':
-            filename = f'research_tracker_{timestamp}.csv'
-            filepath = os.path.join(temp_dir, filename)
-            _research_export_tracker(opportunities, filepath)
-            mimetype = 'text/csv'
-        else:
-            return jsonify({'success': False, 'error': 'Invalid format type'}), 400
+    if format_type == 'csv':
+        filename = f'research_opportunities_{timestamp}.csv'
+        filepath = _temp_path(filename)
+        _research_export_csv(opportunities, filepath)
+        mimetype = 'text/csv'
+    elif format_type == 'excel':
+        try:
+            import openpyxl  # noqa: F401
+        except ImportError:
+            log.error("Research Excel export requested but openpyxl is not installed")
+            return jsonify({'success': False, 'error': 'Excel export requires openpyxl'}), 500
+        filename = f'research_opportunities_{timestamp}.xlsx'
+        filepath = _temp_path(filename)
+        _research_export_excel(opportunities, filepath, student_profile)
+        mimetype = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    elif format_type == 'pdf':
+        try:
+            import reportlab  # noqa: F401
+        except ImportError:
+            log.error("Research PDF export requested but reportlab is not installed")
+            return jsonify({'success': False, 'error': 'PDF export requires reportlab'}), 500
+        filename = f'research_opportunities_{timestamp}.pdf'
+        filepath = _temp_path(filename)
+        _research_export_pdf(opportunities, filepath, student_profile)
+        mimetype = 'application/pdf'
+    elif format_type == 'calendar':
+        filename = f'research_deadlines_{timestamp}.ics'
+        filepath = _temp_path(filename)
+        _research_export_calendar(opportunities, filepath)
+        mimetype = 'text/calendar'
+    else:  # tracker
+        filename = f'research_tracker_{timestamp}.csv'
+        filepath = _temp_path(filename)
+        _research_export_tracker(opportunities, filepath)
+        mimetype = 'text/csv'
 
-        return send_file(filepath, mimetype=mimetype, as_attachment=True, download_name=filename)
-
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+    log.info("Research export: format=%s rows=%d", format_type, len(opportunities))
+    return _send_temp_file(filepath, mimetype, filename)
 
 
 # ── Email alert endpoints ──────────────────────────────────────────────────────
 
 @app.route('/api/subscribe', methods=['POST'])
 def subscribe():
-    try:
-        data = request.json
-        to_email = (data.get('email') or '').strip().lower()
-        profile = data.get('profile', {})
+    data = _json_body()
+    to_email = (data.get('email') or '').strip().lower()
+    profile = data.get('profile') or {}
+    if not isinstance(profile, dict):
+        raise BadRequest('Profile must be an object.')
 
-        if not to_email or '@' not in to_email:
-            return jsonify({'success': False, 'error': 'Valid email required'}), 400
+    if not to_email or '@' not in to_email:
+        raise BadRequest('Valid email required')
 
-        if not kv_store.is_available() and not email_client.is_available():
-            return jsonify({'success': False, 'error': 'Email alerts are not available yet. Check back soon!'}), 503
+    if not kv_store.is_available() and not email_client.is_available():
+        log.warning("Subscribe attempted but neither KV storage nor email is configured")
+        return jsonify({'success': False, 'error': 'Email alerts are not available yet. Check back soon!'}), 503
 
-        stored = kv_store.save_subscriber(to_email, profile)
-        sent = email_client.send_confirmation(to_email, profile)
+    stored = kv_store.save_subscriber(to_email, profile)
+    sent = email_client.send_confirmation(to_email, profile)
+    log.info("Subscribe: stored=%s confirmation_sent=%s", stored, sent)
 
-        if not stored and not sent:
-            return jsonify({'success': False, 'error': 'Could not save subscription. Please try again.'}), 500
+    if not stored and not sent:
+        return jsonify({'success': False, 'error': 'Could not save subscription. Please try again.'}), 500
 
-        return jsonify({
-            'success': True,
-            'stored': stored,
-            'email_sent': sent,
-        })
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+    return jsonify({
+        'success': True,
+        'stored': stored,
+        'email_sent': sent,
+    })
 
 
 @app.route('/api/unsubscribe', methods=['GET'])
 def unsubscribe():
     to_email = request.args.get('email', '').strip().lower()
-    if to_email:
-        kv_store.unsubscribe(to_email)
+    if to_email and not kv_store.unsubscribe(to_email):
+        log.warning("Unsubscribe could not remove subscriber from KV")
     return '''<html><body style="font-family:sans-serif;text-align:center;padding:60px">
         <h2>✅ Unsubscribed</h2>
         <p>You've been removed from weekly scholarship alerts.</p>
@@ -690,20 +776,35 @@ def run_cron():
     auth = request.headers.get('Authorization', '')
     cron_secret = os.environ.get('CRON_SECRET', '')
     if cron_secret and auth != f'Bearer {cron_secret}':
+        log.warning("Rejected unauthorized cron request")
         return jsonify({'error': 'Unauthorized'}), 401
 
     subscribers = kv_store.get_all_subscribers()
+    log.info("Cron: sending weekly alerts to %d subscribers", len(subscribers))
     sent_count = 0
     errors = []
 
     for sub in subscribers:
         to_email = sub['email']
-        profile = sub['profile']
         try:
+            # Stored profiles come straight from the browser; normalize them the
+            # same way /api/search does so missing keys can't crash the agent.
+            profile = _build_profile(sub['profile'] if isinstance(sub['profile'], dict) else {})
+            if _profile_validation_error(profile):
+                errors.append(f"{to_email}: incomplete saved profile")
+                continue
             scholarships_json, _ = _run_agent(profile, 'priority')
-            email_client.send_weekly_alert(to_email, scholarships_json, profile)
-            sent_count += 1
-        except Exception as e:
-            errors.append(f"{to_email}: {e}")
+            if email_client.send_weekly_alert(to_email, scholarships_json, profile):
+                sent_count += 1
+            elif scholarships_json:
+                errors.append(f"{to_email}: email send failed")
+        except Exception:
+            log.exception("Cron: weekly alert failed for a subscriber")
+            errors.append(f"{to_email}: unexpected error")
 
+    log.info("Cron finished: %d sent, %d errors", sent_count, len(errors))
     return jsonify({'success': True, 'sent': sent_count, 'errors': errors})
+
+
+if __name__ == '__main__':
+    app.run(debug=True, port=int(os.environ.get('PORT', 5000)))

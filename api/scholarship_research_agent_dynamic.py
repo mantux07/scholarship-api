@@ -9,10 +9,15 @@ Generates relevant scholarships based on student profile inputs
 
 import csv
 import json
+import logging
 import urllib.parse
 from datetime import datetime, timedelta
 from typing import List, Dict, Optional
 from dataclasses import dataclass, asdict
+
+from dedupe import DuplicateFilter
+
+log = logging.getLogger(__name__)
 
 # Known universities → their real financial-aid / scholarship page. Extend as
 # needed. Matched by case-insensitive substring on the submitted university name.
@@ -70,6 +75,7 @@ class DynamicScholarshipAgent:
 
     def __init__(self, user_gpa: float = 3.5, home_state: str = "", discipline: str = "", student_profile: dict = None):
         self.scholarships: List[Scholarship] = []
+        self._seen = DuplicateFilter()
         self.user_gpa = user_gpa
         self.home_state = home_state
         self.discipline = discipline
@@ -136,8 +142,8 @@ class DynamicScholarshipAgent:
                     deadline_date = deadline_date.replace(year=deadline_date.year + 1)
 
             return deadline_date
-        except:
-            pass
+        except Exception:
+            log.warning("Could not parse deadline %r", deadline_str, exc_info=True)
         return None
 
     def calculate_priority_score(self, scholarship: Scholarship) -> float:
@@ -189,7 +195,13 @@ class DynamicScholarshipAgent:
                        competitiveness: str, application_url: str,
                        notes: str, renewable: bool, category: str,
                        estimated_hours: float):
-        """Add scholarship with metadata"""
+        """Add scholarship with metadata. The first entry with a given name wins;
+        later catalog methods that list the same program are skipped."""
+
+        if self._seen.is_duplicate(name):
+            log.debug("Skipping duplicate scholarship %r", name)
+            return
+        self._seen.add(name)
 
         deadline_date = self.parse_deadline(deadline)
         days_until = 999
@@ -227,9 +239,6 @@ class DynamicScholarshipAgent:
 
     def research_scholarships(self):
         """Generate scholarships dynamically based on student profile"""
-
-        # === NATIONAL MERIT-BASED SCHOLARSHIPS (Universal) ===
-        self.add_universal_scholarships()
 
         # === UNIVERSITY-SPECIFIC SCHOLARSHIPS ===
         self.add_university_scholarships()
@@ -274,49 +283,6 @@ class DynamicScholarshipAgent:
         # no financial data, so need-based scholarships can't be matched and are
         # dropped here as the final step (catches every category added above).
         self.scholarships = [s for s in self.scholarships if not self._is_need_based(s)]
-
-    def add_universal_scholarships(self):
-        """Add universal merit-based scholarships applicable to all students"""
-
-        self.add_scholarship(
-            "Coca-Cola Scholars Program", 20000, 20000,
-            "$20,000", "October 31, 2025", 3.0, 3.5,
-            "Leadership, academic excellence, community service",
-            True, 1000, 2, True, "Very High",
-            "https://www.coca-colascholarsfoundation.org",
-            "One of largest corporate scholarship programs",
-            False, "National", 7.0
-        )
-
-        self.add_scholarship(
-            "Dell Scholars Program", 20000, 20000,
-            "$20,000 + laptop", "December 1, 2025", 2.4, 3.0,
-            "Students who overcome significant obstacles",
-            True, 800, 2, True, "High",
-            "https://www.dellscholars.org",
-            "Focus on persistence and determination",
-            True, "Corporate", 6.0
-        )
-
-        self.add_scholarship(
-            "Horatio Alger Scholarship", 7500, 25000,
-            "$7,500-$25,000", "March 15, 2026", 2.0, 3.0,
-            "Overcoming adversity, financial need",
-            True, 800, 2, True, "Medium",
-            "https://scholars.horatioalger.org",
-            "Focus on resilience and character",
-            False, "National", 5.0
-        )
-
-        self.add_scholarship(
-            "Elks National Foundation Most Valuable Student", 4000, 12500,
-            "$4,000-$12,500/year (4 years)", "November 2025", 3.5, 3.7,
-            "Leadership, scholarship, financial need",
-            True, 1000, 2, False, "High",
-            "https://www.elks.org/scholars/scholarships/MVS.cfm",
-            "Very competitive national scholarship",
-            True, "National", 6.0
-        )
 
     def _university_aid_url(self) -> str:
         """Working link to the university's financial-aid/scholarship office:
@@ -418,7 +384,7 @@ class DynamicScholarshipAgent:
 
         self.add_scholarship(
             "Barry Goldwater Scholarship", 7500, 7500,
-            "Up to $7,500", "January 2026", 3.7, 3.8,
+            "Up to $7,500", "January 31, 2026", 3.7, 3.8,
             "Sophomore/Junior STEM students",
             True, 1000, 3, True, "Very High",
             "https://goldwaterscholarship.gov",
@@ -556,18 +522,6 @@ class DynamicScholarshipAgent:
                 "https://www.aises.org/scholarships",
                 "Membership encouraged",
                 False, "Diversity", 3.0
-            )
-
-        # Gender-based scholarships
-        if 'female' in self.gender.lower() or 'woman' in self.gender.lower():
-            self.add_scholarship(
-                "Women in STEM Scholarship", 2500, 10000,
-                "$2,500-$10,000", "February 1, 2026", 3.0, 3.4,
-                "Women pursuing STEM degrees",
-                True, 700, 2, False, "Medium",
-                "https://swe.org/scholarships/",
-                "Encouraging women in STEM fields",
-                False, "Diversity", 4.5
             )
 
         # LGBTQ+ scholarships

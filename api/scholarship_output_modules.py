@@ -8,9 +8,12 @@ Includes: Excel, PDF, HTML, and ICS Calendar generation
 """
 
 import csv
+import logging
 from datetime import datetime
 from typing import List
 import json
+
+log = logging.getLogger(__name__)
 
 
 class ExcelExporter:
@@ -29,7 +32,7 @@ class ExcelExporter:
             self.available = True
         except ImportError:
             self.available = False
-            print("⚠️  openpyxl not installed. Install with: pip3 install openpyxl")
+            log.warning("openpyxl not installed; Excel export unavailable")
 
     def export(self, scholarships: List, filepath: str, student_profile: dict = None) -> bool:
         """Export to Excel with formatting"""
@@ -166,7 +169,7 @@ class ExcelExporter:
         summary[f'B{row}'] = datetime.now().strftime('%Y-%m-%d %H:%M')
 
         wb.save(filepath)
-        print(f"✓ Excel file created: {filepath}")
+        log.debug("Excel file created: %s", filepath)
         return True
 
 
@@ -193,7 +196,7 @@ class PDFExporter:
             self.available = True
         except ImportError:
             self.available = False
-            print("⚠️  reportlab not installed. Install with: pip3 install reportlab")
+            log.warning("reportlab not installed; PDF export unavailable")
 
     def export(self, scholarships: List, filepath: str, user_gpa: float, student_profile: dict = None) -> bool:
         """Export top scholarships to PDF"""
@@ -261,7 +264,7 @@ class PDFExporter:
                 elements.append(self.PageBreak())
 
         doc.build(elements)
-        print(f"✓ PDF report created: {filepath}")
+        log.debug("PDF report created: %s", filepath)
         return True
 
 
@@ -621,7 +624,7 @@ class HTMLDashboard:
         with open(filepath, 'w', encoding='utf-8') as f:
             f.write(html_content)
 
-        print(f"✓ HTML dashboard created: {filepath}")
+        log.debug("HTML dashboard created: %s", filepath)
         return True
 
 
@@ -687,8 +690,7 @@ END:VEVENT
         with open(filepath, 'w', encoding='utf-8') as f:
             f.write(ics_content)
 
-        print(f"✓ Calendar file created: {filepath}")
-        print("  Import this file into your calendar app (Google Calendar, Apple Calendar, Outlook)")
+        log.debug("Calendar file created: %s", filepath)
         return True
 
 
@@ -729,8 +731,7 @@ class ApplicationTracker:
                     'Notes': ''
                 })
 
-        print(f"✓ Application tracker created: {filepath}")
-        print("  Use this file to track your application progress")
+        log.debug("Application tracker created: %s", filepath)
         return True
 
 

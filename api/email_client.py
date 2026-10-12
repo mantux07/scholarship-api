@@ -15,11 +15,15 @@ Env vars required:
   APP_URL        your site URL for links in emails
 """
 
+import logging
 import os
 import smtplib
 import ssl
+from urllib.parse import quote
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+
+log = logging.getLogger(__name__)
 
 SMTP_HOST = os.environ.get('SMTP_HOST', 'smtp.hostinger.com')
 SMTP_PORT = int(os.environ.get('SMTP_PORT', '587'))
@@ -125,7 +129,7 @@ def send_weekly_alert(to_email: str, scholarships: list, profile: dict) -> bool:
           </a>
         </div>
         <p style="color:#a0aec0;font-size:0.8em;text-align:center;margin-top:20px">
-          <a href="{APP_URL}/api/unsubscribe?email={to_email}" style="color:#a0aec0">Unsubscribe</a>
+          <a href="{APP_URL}/api/unsubscribe?email={quote(to_email)}" style="color:#a0aec0">Unsubscribe</a>
         </p>
       </div>
     </div>
@@ -162,6 +166,6 @@ def _send(to_email: str, subject: str, html: str) -> bool:
                 server.sendmail(FROM_EMAIL, to_email, msg.as_string())
 
         return True
-    except Exception as e:
-        print(f"Email send error: {e}")
+    except Exception:
+        log.exception("Email send failed (subject: %s)", subject)
         return False
