@@ -35,7 +35,7 @@ for _noisy in ('urllib3', 'httpx', 'httpcore', 'anthropic'):
     logging.getLogger(_noisy).setLevel(logging.WARNING)
 log = logging.getLogger('scholarship_api')
 
-from scholarship_research_agent_dynamic import DynamicScholarshipAgent
+from scholarship_research_agent_dynamic import DynamicScholarshipAgent, is_need_based_text
 from research_opportunity_agent import ResearchOpportunityAgent
 from scholarship_output_modules import (
     ExcelExporter, PDFExporter, HTMLDashboard,
@@ -184,6 +184,7 @@ def _build_profile(data: dict) -> dict:
         'first_gen': data.get('first_gen', False),
         'military': data.get('military', False),
         'research': data.get('research', False),
+        'financial_need': bool(data.get('financial_need', False)),
         'discipline': _clean_text(data, 'discipline'),
         'skills': _clean_text(data, 'skills', 'Not specified'),
         'clubs': _clean_text(data, 'clubs', 'Not specified'),
@@ -214,6 +215,7 @@ def _scholarship_to_dict(s) -> dict:
         'application_url': s.application_url,
         'notes': s.notes,
         'priority_score': s.priority_score,
+        'need_based': s.need_based,
         'source': 'Database',
     }
 
@@ -276,6 +278,10 @@ def search_scholarships():
     for ext in external_results:
         name = ext.get('name', '')
         url = ext.get('application_url', '')
+        ext['need_based'] = is_need_based_text(ext.get('notes', ''))
+        if ext['need_based'] and not student_profile['financial_need']:
+            log.debug("Dropping need-based AI suggestion for merit-only search: %r", name)
+            continue
         if seen.is_duplicate(name, url):
             log.debug("Dropping AI suggestion already in results: %r", name)
             continue
@@ -307,8 +313,9 @@ def search_scholarships():
         }
     }
 
-    log.info("Scholarship search: major=%r year=%r -> %d results (%d database, %d of %d AI suggestions kept)",
-             student_profile['major'], student_profile['year'], len(scholarships_json),
+    log.info("Scholarship search: major=%r year=%r need=%s -> %d results (%d database, %d of %d AI suggestions kept)",
+             student_profile['major'], student_profile['year'], student_profile['financial_need'],
+             len(scholarships_json),
              stats['sources']['database'], added, len(external_results))
 
     return jsonify({
@@ -434,6 +441,7 @@ def _build_research_profile(data: dict) -> dict:
         'residency': _clean_text(data, 'residency'),
         'first_gen': bool(data.get('first_gen', False)),
         'military': bool(data.get('military', False)),
+        'financial_need': bool(data.get('financial_need', False)),
         'disability': _clean_text(data, 'disability'),
         'skills': _clean_text(data, 'skills'),
         'clubs': _clean_text(data, 'clubs'),
@@ -465,6 +473,7 @@ def _opportunity_to_dict(o) -> dict:
         'category': o.category,
         'competitiveness': o.competitiveness,
         'priority_score': o.priority_score,
+        'restricted_eligibility': bool(o.target_identities),
     }
 
 
@@ -495,8 +504,9 @@ def search_research():
         'categories': sorted({o.category for o in opportunities}),
     }
 
-    log.info("Research search: major=%r year=%r -> %d results",
-             student_profile['major'], student_profile['year'], len(opportunities_json))
+    log.info("Research search: major=%r year=%r need=%s -> %d results",
+             student_profile['major'], student_profile['year'], student_profile['financial_need'],
+             len(opportunities_json))
 
     return jsonify({
         'success': True,

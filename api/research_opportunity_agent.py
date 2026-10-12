@@ -89,6 +89,38 @@ class ResearchOpportunity:
 
         return True
 
+    def identity_hits(self, profile: dict) -> int:
+        """How many of target_identities the student's profile matches."""
+        identity_hits = 0
+        if self.target_identities:
+            heritage_tokens = self._tokens(profile.get("heritage"))
+            disability_tokens = self._tokens(profile.get("disability"))
+            gender = (profile.get("gender") or "").lower()
+            urm_terms = {
+                "black", "african american", "hispanic", "latino", "latina",
+                "native american", "indigenous", "pacific islander", "alaska native",
+            }
+            is_urm = any(t in urm_terms or any(u in t for u in urm_terms) for t in heritage_tokens)
+
+            for tag in self.target_identities:
+                tag_l = tag.lower()
+                if tag_l == "first-gen" and profile.get("first_gen"):
+                    identity_hits += 1
+                elif tag_l == "urm" and is_urm:
+                    identity_hits += 1
+                elif tag_l in {"black", "hispanic", "native american", "pacific islander", "asian american"}:
+                    if any(tag_l in t or t in tag_l for t in heritage_tokens):
+                        identity_hits += 1
+                elif tag_l in {"women", "female"} and gender in {"female", "non-binary"}:
+                    identity_hits += 1
+                elif tag_l == "lgbtq+" and gender in {"lgbtq+", "non-binary"}:
+                    identity_hits += 1
+                elif tag_l == "disability" and disability_tokens:
+                    identity_hits += 1
+                elif tag_l == "veteran" and profile.get("military"):
+                    identity_hits += 1
+        return identity_hits
+
     def calculate_priority(self, profile: dict):
         """Priority score 0-100. Higher = better match."""
         score = 0.0
@@ -119,35 +151,7 @@ class ResearchOpportunity:
 
         # Identity boost (up to 15)
         if self.target_identities:
-            identity_hits = 0
-            heritage_tokens = self._tokens(profile.get("heritage"))
-            disability_tokens = self._tokens(profile.get("disability"))
-            gender = (profile.get("gender") or "").lower()
-            urm_terms = {
-                "black", "african american", "hispanic", "latino", "latina",
-                "native american", "indigenous", "pacific islander", "alaska native",
-            }
-            is_urm = any(t in urm_terms or any(u in t for u in urm_terms) for t in heritage_tokens)
-
-            for tag in self.target_identities:
-                tag_l = tag.lower()
-                if tag_l == "first-gen" and profile.get("first_gen"):
-                    identity_hits += 1
-                elif tag_l == "urm" and is_urm:
-                    identity_hits += 1
-                elif tag_l in {"black", "hispanic", "native american", "pacific islander", "asian american"}:
-                    if any(tag_l in t or t in tag_l for t in heritage_tokens):
-                        identity_hits += 1
-                elif tag_l in {"women", "female"} and gender in {"female", "non-binary"}:
-                    identity_hits += 1
-                elif tag_l == "lgbtq+" and gender in {"lgbtq+", "non-binary"}:
-                    identity_hits += 1
-                elif tag_l == "disability" and disability_tokens:
-                    identity_hits += 1
-                elif tag_l == "veteran" and profile.get("military"):
-                    identity_hits += 1
-
-            score += min(identity_hits * 8, 15)
+            score += min(self.identity_hits(profile) * 8, 15)
 
         # Skill boost (up to 5)
         if self.skills_match:
@@ -226,13 +230,18 @@ class ResearchOpportunityAgent:
         self.add_international_programs()
         self._drop_duplicates()
 
-        # Merit-based only: exclude identity/need-restricted programs (e.g.
-        # McNair, LSAMP, NIH UGSP). These are gated on first-gen / low-income /
-        # URM status by design, and the profile collects no such financial data,
-        # so they can't be matched reliably. target_identities is set precisely
-        # on those programs and empty on every merit-open one.
-        merit_only = [o for o in self.opportunities if not o.target_identities]
-        matched = [o for o in merit_only if o.matches_profile(self.student_profile)]
+        # Identity/need-restricted programs (e.g. McNair, LSAMP, NIH UGSP) are
+        # gated on first-gen / low-income / URM status. target_identities is set
+        # precisely on those programs and empty on every merit-open one. They're
+        # excluded unless the student reports financial need, and even then only
+        # shown when the profile matches at least one of the targeted identities.
+        include_restricted = bool(self.student_profile.get("financial_need"))
+        candidates = [
+            o for o in self.opportunities
+            if not o.target_identities
+            or (include_restricted and o.identity_hits(self.student_profile) > 0)
+        ]
+        matched = [o for o in candidates if o.matches_profile(self.student_profile)]
         for opp in matched:
             opp.calculate_priority(self.student_profile)
         matched.sort(key=lambda x: x.priority_score, reverse=True)

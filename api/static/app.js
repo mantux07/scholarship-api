@@ -25,7 +25,7 @@ const PROFILE_FIELDS = [
     'university','major','year','gpa','discipline','heritage','gender',
     'state','residency','skills','clubs','athletics','disability'
 ];
-const CHECKBOX_FIELDS = ['first_gen','military','research'];
+const CHECKBOX_FIELDS = ['first_gen','military','research','financial_need'];
 
 function saveProfile() {
     const profile = {};
@@ -89,6 +89,7 @@ document.getElementById('scholarshipForm').addEventListener('submit', async func
         first_gen: document.getElementById('first_gen').checked,
         military: document.getElementById('military').checked,
         research: document.getElementById('research').checked,
+        financial_need: document.getElementById('financial_need').checked,
         skills: document.getElementById('skills').value,
         clubs: document.getElementById('clubs').value,
         athletics: document.getElementById('athletics').value,
@@ -184,6 +185,7 @@ function displayResults(data, formData) {
         ${data.profile.athletics !== 'Not specified' ? `<p><strong>⚽ Athletics:</strong> ${data.profile.athletics}</p>` : ''}
         ${data.profile.first_gen ? '<p><strong>✨ First-Generation Student</strong></p>' : ''}
         ${data.profile.military ? '<p><strong>🎖️ Military Affiliated</strong></p>' : ''}
+        <p><strong>💰 Awards:</strong> ${data.profile.financial_need ? 'Merit + need-based' : 'Merit-based only'}</p>
     `;
 
     // Statistics
@@ -265,6 +267,7 @@ function displayResults(data, formData) {
                 <div class="scholarship-title">
                     ${scholarship.name}
                     ${scholarship.source === 'AI Suggested' ? '<span class="source-badge source-ai">AI Suggested ✨</span>' : ''}
+                    ${scholarship.need_based ? '<span class="source-badge source-need">Need-based</span>' : ''}
                 </div>
                 <div class="priority-badge">Priority: ${scholarship.priority_score}/100</div>
             </div>
@@ -505,7 +508,10 @@ function displayResearchResults(data, formData) {
         card.className = `scholarship-card ${priorityClass}`;
         card.innerHTML = `
             <div class="scholarship-header">
-                <div class="scholarship-title">${opp.name}</div>
+                <div class="scholarship-title">
+                    ${opp.name}
+                    ${opp.restricted_eligibility ? '<span class="source-badge source-need">Need / identity-based</span>' : ''}
+                </div>
                 <div class="priority-badge">Priority: ${opp.priority_score}/100</div>
             </div>
 

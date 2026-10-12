@@ -19,6 +19,19 @@ from dedupe import DuplicateFilter
 
 log = logging.getLogger(__name__)
 
+# Eligibility/notes phrases that mark an award as need-based.
+NEED_KEYWORDS = [
+    'financial need', 'need-based', 'need based', 'low-income', 'low income',
+    'disadvantaged', 'adversity', 'significant obstacles', 'overcome obstacles',
+    'economic hardship', 'unmet financial', 'demonstrated need', 'demonstrating need',
+    'pell', 'efc', 'fafsa',
+]
+
+
+def is_need_based_text(text: str) -> bool:
+    text = (text or '').lower()
+    return any(kw in text for kw in NEED_KEYWORDS)
+
 # Known universities → their real financial-aid / scholarship page. Extend as
 # needed. Matched by case-insensitive substring on the submitted university name.
 KNOWN_UNIVERSITY_AID_URLS = {
@@ -69,6 +82,7 @@ class Scholarship:
     priority_score: float = 0.0
     days_until_deadline: int = 999
     date_researched: str = ""
+    need_based: bool = False
 
 class DynamicScholarshipAgent:
     """Dynamic scholarship search based on student profile"""
@@ -93,6 +107,8 @@ class DynamicScholarshipAgent:
         self.military = self.student_profile.get('military', False)
         self.research = self.student_profile.get('research', False)
         self.disability = self.student_profile.get('disability', '')
+        # Student says they have financial need; when False, results are merit-only.
+        self.financial_need = bool(self.student_profile.get('financial_need', False))
 
         # Determine education level from year field
         # HS years are prefixed with "HS " (e.g. "HS Senior")
@@ -234,6 +250,7 @@ class DynamicScholarshipAgent:
             date_researched=self.today.strftime('%Y-%m-%d')
         )
 
+        scholarship.need_based = self._is_need_based(scholarship)
         scholarship.priority_score = self.calculate_priority_score(scholarship)
         self.scholarships.append(scholarship)
 
@@ -278,11 +295,12 @@ class DynamicScholarshipAgent:
         # === CORPORATE SCHOLARSHIPS ===
         self.add_corporate_scholarships()
 
-        # === MERIT-BASED ONLY ===
-        # These searches surface merit-based awards only. The profile collects
-        # no financial data, so need-based scholarships can't be matched and are
-        # dropped here as the final step (catches every category added above).
-        self.scholarships = [s for s in self.scholarships if not self._is_need_based(s)]
+        # === MERIT-BASED ONLY (unless the student reports financial need) ===
+        # The profile collects no income data, so need-based awards are shown
+        # only when the student opts in with the financial_need checkbox.
+        # Final step so it catches every category added above.
+        if not self.financial_need:
+            self.scholarships = [s for s in self.scholarships if not s.need_based]
 
     def _university_aid_url(self) -> str:
         """Working link to the university's financial-aid/scholarship office:
@@ -596,19 +614,8 @@ class DynamicScholarshipAgent:
     ]
 
     def _is_need_based(self, scholarship) -> bool:
-        """Return True if eligibility depends on financial need.
-
-        These searches surface merit-based awards only — and the student
-        profile collects no financial data (income/EFC/FAFSA), so need-based
-        awards can't be matched reliably and are dropped entirely."""
-        combined = (scholarship.eligibility + ' ' + scholarship.notes).lower()
-        need_keywords = [
-            'financial need', 'need-based', 'need based', 'low-income', 'low income',
-            'disadvantaged', 'adversity', 'significant obstacles', 'overcome obstacles',
-            'economic hardship', 'unmet financial', 'demonstrated need', 'demonstrating need',
-            'pell', 'efc', 'fafsa',
-        ]
-        return any(kw in combined for kw in need_keywords)
+        """Return True if eligibility depends on financial need."""
+        return is_need_based_text(scholarship.eligibility + ' ' + scholarship.notes)
 
     def _is_hs_only(self, scholarship) -> bool:
         """Return True if this scholarship is only open to current high school students."""

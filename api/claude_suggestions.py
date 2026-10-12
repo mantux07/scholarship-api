@@ -49,6 +49,8 @@ def get_suggestions(student_profile: dict) -> list:
                 'role': 'user',
                 'content': f"""Find 12 real scholarships for this student. Prioritize niche, heritage-specific, state-specific, and field-specific opportunities they are unlikely to find through a basic Google search.
 
+{_need_instruction(student_profile)}
+
 {_format_profile(student_profile)}
 
 Return ONLY a valid JSON array — no other text, no markdown. Each object must have exactly these fields:
@@ -160,6 +162,13 @@ def _normalize(s: dict) -> dict:
         'priority_score': priority,
         'source': 'AI Suggested'
     }
+
+
+def _need_instruction(p: dict) -> str:
+    if p.get('financial_need'):
+        return ('The student has financial need, so need-based awards are welcome alongside merit awards. '
+                'Say so in "eligibility" when an award requires financial need.')
+    return 'Suggest merit-based awards only. Exclude anything that requires demonstrated financial need.'
 
 
 def _format_profile(p: dict) -> str:
