@@ -368,7 +368,17 @@ class DynamicScholarshipAgent:
         for term in non_stem_science:
             cleaned = cleaned.replace(term, '')
         return any(word in cleaned for word in
-                   ['engineering', 'computer', 'science', 'technology', 'math'])
+                   ['engineering', 'computer', 'science', 'technology', 'math',
+                    'statistic', 'biolog', 'chemi', 'physics', 'biochem', 'neuro',
+                    'geolog', 'astronom', 'ecolog', 'genetic', 'biomedical'])
+
+    def _is_tech_major(self) -> bool:
+        """True for engineering / computing majors: the narrower audience of
+        SWE and the corporate tech scholarships (vs. all of STEM)."""
+        major = self.major.lower()
+        return any(word in major for word in
+                   ['engineering', 'computer', 'computing', 'software', 'data science',
+                    'information technology', 'information systems', 'cyber'])
 
     def add_major_scholarships(self):
         """Add scholarships specific to student's major/discipline"""
@@ -388,7 +398,8 @@ class DynamicScholarshipAgent:
             self.add_arts_scholarships()
 
     def add_stem_scholarships(self):
-        """Add STEM-specific scholarships"""
+        """Add STEM-specific scholarships. SMART and Goldwater are open to all
+        of STEM; the rest are limited to computing / engineering majors."""
 
         self.add_scholarship(
             "SMART Scholarship for Service Program", 50000, 80000,
@@ -410,15 +421,19 @@ class DynamicScholarshipAgent:
             False, "National", 8.0
         )
 
-        self.add_scholarship(
-            "Generation Google Scholarship", 10000, 10000,
-            "$10,000", "December 8, 2025", 3.3, 3.6,
-            "CS/Computer Engineering students",
-            True, 800, 2, False, "High",
-            "https://buildyourfuture.withgoogle.com/scholarships/generation-google-scholarship",
-            "For underrepresented groups in tech",
-            False, "Corporate", 5.0
-        )
+        if not self._is_tech_major():
+            return
+
+        if any(word in self.major.lower() for word in ['computer', 'computing', 'software']):
+            self.add_scholarship(
+                "Generation Google Scholarship", 10000, 10000,
+                "$10,000", "December 8, 2025", 3.3, 3.6,
+                "CS/Computer Engineering students",
+                True, 800, 2, False, "High",
+                "https://buildyourfuture.withgoogle.com/scholarships/generation-google-scholarship",
+                "For underrepresented groups in tech",
+                False, "Corporate", 5.0
+            )
 
         self.add_scholarship(
             "Society of Women Engineers (SWE) Scholarship", 1000, 15000,
@@ -1084,7 +1099,7 @@ class DynamicScholarshipAgent:
 
         # Amazon, Microsoft, and Apple all target CS/Engineering students, so
         # only surface them for tech-related majors.
-        if not self._is_stem_major():
+        if not self._is_tech_major():
             return
 
         self.add_scholarship(

@@ -43,6 +43,7 @@ scholarship_system/
         ├── research_opportunity_agent.py
         ├── scholarship_output_modules.py
         ├── claude_suggestions.py
+        ├── dedupe.py            # DuplicateFilter: fuzzy name / URL duplicate detection
         ├── kv_store.py
         ├── email_client.py
         └── static/
@@ -64,6 +65,18 @@ Do not recreate the old CLI, `webapp/`, or Render config.
 Browser form → `api/static/app.js` → `POST /api/search` or `POST /api/research` (or both when the "Both" tab is active) → Flask handler in `api/index.py` builds a profile dict → calls `DynamicScholarshipAgent` and/or `ResearchOpportunityAgent` → JSON response → frontend renders cards + offers downloads.
 
 The frontend uses relative API paths (`const API_URL = '';`) so frontend and backend must be served from the same host.
+
+### How the pieces fit
+
+- **The "database" is Python code.** There is no data file or DB: each agent builds its catalog from hardcoded `add_*_scholarships()` / `add_*_programs()` methods that call `add_scholarship(...)` / `add_research_opportunity(...)`. Adding or fixing a listing means editing those methods. Catalog methods overlap, so both agents drop repeat listings through `dedupe.DuplicateFilter` (first one added wins; `add_scholarship` checks on insert, `ResearchOpportunityAgent._drop_duplicates` after the catalog is built). Check `LOG_LEVEL=DEBUG` output for `Skipping duplicate` lines after adding listings. Major gating uses `_is_stem_major` (all of STEM, including natural sciences; Nursing and other health majors are deliberately excluded) for SMART/Goldwater, and the narrower `_is_tech_major` (engineering/computing) for SWE and the corporate tech awards. Profile-based eligibility filtering and priority scoring happen inside the agents (`calculate_priority_score`, `ResearchOpportunity.matches_profile` / `calculate_priority`).
+- **Merit-only by default.** The `financial_need` checkbox (profile key, default `False`) opts in to need-based awards. Scholarships are tagged `need_based` by `is_need_based_text` keyword matching on eligibility/notes, and dropped at the end of `research_scholarships()` unless the flag is set. Research programs with non-empty `target_identities` (McNair, LSAMP, etc.) are included only when the flag is set **and** `identity_hits(profile) > 0`. AI suggestions get the same keyword filter, and the prompt asks for merit-only. Results carry `need_based` / `restricted_eligibility` for the UI badge.
+- **Deadlines are strings** parsed by `parse_deadline`. `days_until_deadline == 999` means "TBD" (serialized as `'TBD'`). Expired entries (`< 0`) are dropped in `index.py`, so a stale hardcoded deadline makes a listing disappear silently.
+- **Two profile builders:** `_build_profile` (scholarships, also used by `/api/cron`) and `_build_research_profile` (research) in `index.py`. Their defaults differ. Both endpoints run `_profile_validation_error`, which requires university, major, and year.
+- **AI suggestions are merged only into the search response.** `/api/search` runs the local agent, then `claude_suggestions.get_suggestions` via `_fetch_ai_suggestions` (`AI_SUGGESTIONS_TIMEOUT` = 20s; timeouts and errors fall back to database-only results), and drops suggestions that `DuplicateFilter` matches to a database entry by fuzzy name or application URL. Downloads re-run the local agent from the submitted profile, so AI-suggested items never appear in exported files.
+- **Exporters are split.** Scholarship exports use the classes in `scholarship_output_modules.py`, plus `agent.export_to_csv` for CSV. Research exports are the `_research_export_*` functions inside `index.py`. Files are written to `tempfile.gettempdir()` (Vercel's writable `/tmp`).
+- **Optional integrations** (`claude_suggestions`, `kv_store`, `email_client`) each expose `is_available()` based on env vars. Check it before calling them. `kv_store` talks to Vercel KV over REST through `requests`.
+- **Errors and logging:** routes don't catch exceptions themselves. Raise `BadRequest(msg)` for user-facing 400s (`_json_body()` and `_require_valid()` do this). Anything else hits the global handler, which logs the traceback and returns a generic 500 without exception text. All modules log through `logging` to stdout (Vercel function logs), with one line per `/api/` request. Downloads go through `_temp_path` / `_send_temp_file`, which use a unique `/tmp` path and delete the file after reading it.
+- `vercel.json` sends every route to `api/index.py` (60s `maxDuration`). The cron runs Mondays 09:00 UTC.
 
 ## API Endpoints
 
@@ -88,7 +101,24 @@ cd /Users/tsmith/Claude/scholarship_system/scholarship-vercel
 python3 api/index.py
 ```
 
-For route-level tests, importing `api/index.py` and using Flask's `test_client()` is usually faster and avoids external hosting concerns.
+There is no test suite, linter, or build step. For route-level checks, use Flask's `test_client()`. It is faster and avoids Vercel bot protection:
+
+```bash
+cd /Users/tsmith/Claude/scholarship_system/scholarship-vercel
+python3 -c "
+import sys; sys.path.insert(0, 'api'); from index import app
+c = app.test_client()
+p = {'gpa': 3.6, 'university': 'Purdue University', 'major': 'Biology', 'year': 'Junior'}
+r = c.post('/api/search', json=p); print(r.status_code, r.json['total'])
+r = c.post('/api/research', json=p); print(r.status_code, r.json['total'])
+"
+```
+
+Vary the major, heritage, state, and so on across checks. Results must change with the submitted profile (see Important Input Handling).
+
+## Docs Layout
+
+`/Users/tsmith/Claude/scholarship_system/` is not a git repo. Only `scholarship-vercel/` is. `CLAUDE.md` and `AGENTS.md` (the Codex copy, which differs only in its header) exist both at the root and inside `scholarship-vercel/`, and the copy inside `scholarship-vercel/` is the one tracked in git. Keep all four in sync. The root `README.md` is stale: it documents the removed CLI (`scholarship_agent_complete.py`, `--gpa` flags), so don't follow it.
 
 ## Branch Workflow
 
@@ -114,6 +144,7 @@ Set environment variables in the Vercel project (dashboard or `vercel env add`),
 - `ANTHROPIC_API_KEY` — enables `claude_suggestions.py`
 - `KV_*` (Vercel KV) — enables email subscriber storage
 - `RESEND_API_KEY` or SMTP credentials — enables email sending
+- `LOG_LEVEL` — optional, default `INFO`; `DEBUG` adds skipped duplicates, raw Claude responses, export file paths
 - `CRON_SECRET` — gates `/api/cron` (set; the weekly cron is defined in `vercel.json`)
 
 When setting a var via the CLI, pipe with `printf 'value'`, **not** `echo "value"` — `echo` appends a trailing newline, and Vercel rejects whitespace in `CRON_SECRET` at build time, which silently fails every subsequent deploy with `● Error`.
